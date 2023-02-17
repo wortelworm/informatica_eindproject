@@ -8,8 +8,7 @@
 
 #ifndef ARDUINO
 // this is local testing
-#warning "USING LOCAL JS SERVER!!!!!"
-#include "utils_testing_windows_canvas.h"
+#include "local_server.cpp"
 #else
 // arduino
 
@@ -55,8 +54,8 @@ namespace Utils {
     pinMode(BUTTON_MENU,  INPUT);
   }
 
-  static uint16_t Color333(uint8_t r, uint8_t g, uint8_t b) {
-    return matrix.Color333(r, g, b);
+  static uint16_t Color222(uint8_t r, uint8_t g, uint8_t b) {
+    return matrix.Color222(r, g, b);
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint16_t color) {

@@ -10,8 +10,8 @@
 #include "utils.h"
 
 
-#define snakePixel(x, y) Utils::DrawPixel(x + 2, y + 2, RED);
-#define foodPixel(x, y) Utils::DrawPixel(x + 2, y + 2, GREEN);
+#define snakePixel(x, y) Utils::DrawPixel(x + 1, y + 1, RED);
+#define foodPixel(x, y) Utils::DrawPixel(x + 0, y + 0, GREEN);
 
 namespace Snake {
   
@@ -31,18 +31,18 @@ namespace Snake {
     Snake::reset();
 
     while (! gameOver) {
-      Snake::move();
+      Snake::move(true);
 
       // maybe TODO this as a interrupt
       for (char i = 0; i < 40; i++) {
         Snake::readDirection();
 
-        delay(10);
+        delay(20);
       }      
     }
 
     // TODO gameover screen
-    Utils::FillRect(2, 2, 60, 60, BLUE);
+    Utils::FillRect(22, 22, 20, 20, WHITE);
   }
 
 
@@ -80,7 +80,7 @@ namespace Snake {
 
 
   // main game logic, moves the snake one spot
-  void move() {
+  void move(bool removeTail) {
 
     directionX = nextDirectionX;
     directionY = nextDirectionY;
@@ -154,17 +154,19 @@ namespace Snake {
 
     } else {
       // remove the last tail
-      char tailX = snakeX[snakeLength-1]*4;
-      char tailY = snakeY[snakeLength-1]*4;
+      char tailX = snakeX[snakeLength-1]*4 + 2;
+      char tailY = snakeY[snakeLength-1]*4 + 2;
 
-      for (int8_t i = 0; i < 4; i++) {
-        for (int8_t j = 0; j < 4; j++) {
-          Utils::DrawPixel(tailX + i, tailY + j, 0);
+      if (removeTail) {
+        for (int8_t i = 0; i < 4; i++) {
+          for (int8_t j = 0; j < 4; j++) {
+            Utils::DrawPixel(tailX + i, tailY + j, 0);
+          }
         }
       }
       
       // collision check with walls and self
-      if (newHeadX < 0 || newHeadX > 15 || newHeadY < 0 || newHeadY > 15) {
+      if (newHeadX < 0 || newHeadX >= 15 || newHeadY < 0 || newHeadY >= 15) {
         gameOver = true;
         return;
       } else {
@@ -197,7 +199,7 @@ namespace Snake {
     directionX = 1;
     directionY = 0;
     nextDirectionX = 1;
-    nextDirectionX = 0;
+    nextDirectionY = 0;
     snakeLength = 3;
 
     // the first food will spawn directly in front of the snake
@@ -209,16 +211,24 @@ namespace Snake {
     memset(snakeY, 7, 3);
 
     // draw the side of the screen
-    for (char i = 0; i < 64; i++) {
-      for (char j = 0; j < 64; j++) {
-        Utils::DrawPixel(i, j, (i + j % 2 == 0 || (i > 1 && i < 63) || (j > 1 && j < 63)) ? Utils::Color333(0, 0, 0) : Utils::Color333(0, 7, 7));
+    for (int8_t i = 0; i < 64; i++) {
+      for (int8_t j = 0; j < 64; j++) {
+        if (i > 1 && i < 62 && j > 1 && j < 62) {
+          Utils::DrawPixel(j, i, BLACK);
+        } else
+        if ((i + j) % 2 == 0) {
+          Utils::DrawPixel(j, i, Utils::Color222(0, 3, 3));
+        } else {
+          Utils::DrawPixel(j, i, BLACK);
+        }
       }
     }
 
     drawFood();
 
     // draw the initial snake
-    memset(snakeX, -1, 1);
-    Snake::move();
+    // memset(snakeX, -1, 1);
+    Snake::move(false);
+    Snake::move(false);
   }
 }

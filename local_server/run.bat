@@ -1,4 +1,5 @@
 @echo off
-node ./
+cd ..
+node ./local_server/
 PAUSE >NUL
 EXIT

@@ -16,11 +16,68 @@
                 // set up connection to backend
                 let sock = new WebSocket("ws://localhost");
 		        sock.onmessage = ( e ) => {
-                    console.log(e.data);
+                    // e.data.split('\n').forEach(row => {
+                    //     if (row.trim() == '') {
+                    //         return;
+                    //     }
+                    //     let location = row.split(' ')[0] * 1;
+                    //     let color = row.split(' ')[1] * 1;
+                    
+                    for (let i = 0; i < 4096; i++) {
+                        let color = e.data.charCodeAt(i);
+                        let r = (color >> 4) & 3;
+                        let g = (color >> 2) & 3;
+                        let b = (color >> 0) & 3;
+
+                        setColor(i, `rgb(${r*85}, ${g*85}, ${b*85})`);
+                    }
+                    // );
                 }
+                const keybindings = {
+                    'a': 1,
+                    's': 2,
+                    'd': 3,
+                    'w': 4,
+                    'g': 5,
+                    'j': 6
+                }
+                let input = [0, 0, 0, 0, 0, 0];
+                document.onkeydown = function (e) {
+                    e = e || window.event;
+
+                    const binding = keybindings[e.key];
+                    if (binding == null) {
+                        return;
+                    }
+
+                    if (input[binding - 1] == 1) {
+                        // button continuesly pressed down
+                        return;
+                    }
+
+                    input[binding - 1] = 1;
+                    sock.send(input.join(''));
+                };
+                document.onkeyup = function (e) {
+                    e = e || window.event;
+
+                    const binding = keybindings[e.key];
+                    if (binding == null) {
+                        return;
+                    }
+
+                    input[binding - 1] = 0;
+                    sock.send(input.join(''));
+                };
             }
-            function setColor(x, y, color) {
-                table.children[y].children[x].style.background = color;
+            function setColor(location, color) {
+                try {
+                    table.children[Math.floor(location / 64)].children[location % 64].style.background = color;
+                } catch (e) {
+                    console.log('ERROR:')
+                    console.log(location);
+                    console.log(color);
+                }
             }
         </script>
         <style>
@@ -42,7 +99,7 @@
             #table td {
                 height: 5px;
                 width: 5px;
-                background: black;
+                background: white;
             }
         </style>
     </head>

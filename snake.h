@@ -4,6 +4,6 @@ namespace Snake {
   void Play();
 
   void reset();
-  void move();
+  void move(bool removeTail);
   void readDirection();
 }
