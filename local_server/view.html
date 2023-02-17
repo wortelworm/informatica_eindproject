@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+    <head>
+        <script>
+            let table;
+            function load() {
+                table = document.getElementById('table')
+                for (let i = 0; i < 64; i++) {
+                    const row = document.createElement('tr');
+                    for (let j = 0; j < 64; j++) {
+                        row.appendChild(document.createElement('td'));
+                    }
+                    table.appendChild(row);
+                }
+
+                // set up connection to backend
+                let sock = new WebSocket("ws://localhost");
+		        sock.onmessage = ( e ) => {
+                    console.log(e.data);
+                }
+            }
+            function setColor(x, y, color) {
+                table.children[y].children[x].style.background = color;
+            }
+        </script>
+        <style>
+            * {
+                margin: 0px;
+            }
+            body {
+                background: black;
+                display: flex;
+                justify-content: center;
+                align-content: center;
+                width: 100vw;
+                height: 100vh;
+                flex-wrap: wrap;
+            }
+            #table {
+                height: 578px;
+            }
+            #table td {
+                height: 5px;
+                width: 5px;
+                background: black;
+            }
+        </style>
+    </head>
+    <body onload="load()">
+        <table id="table">
+            
+        </table>
+    </body>
+</html>
