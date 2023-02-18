@@ -90,12 +90,10 @@ namespace Utils {
 
 
 int main() {
-  // setup();
-  // while (true) {
-  //   loop();
-  // }
-
-  Tetris::Play();
+  setup();
+  while (true) {
+    loop();
+  }
 }
 
 

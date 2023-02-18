@@ -2,7 +2,7 @@
 
 namespace Tetris {
   void Play();
-  void piecePreview(uint8_t index);
+  void createPiece();
 
   enum RotationType {
     normal, special, none

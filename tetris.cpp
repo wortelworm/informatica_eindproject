@@ -32,6 +32,10 @@ const Tetris::Piece Pieces[] = {
 
 
 namespace Tetris {
+  uint8_t bag[7];
+  uint8_t bagPointer;
+  Piece fallingPiece;
+  Piece previewPiece;
 
   void Play() {
     // TODO
@@ -47,35 +51,53 @@ namespace Tetris {
       tetrisPixel(30, j-1, WHITE);
     }
 
-    for (int8_t i = 0; i < 10; i++) {
-      for (int8_t j = 0; j < 20; j++) {
-        tetrisBlock(i, j, ((i+j) % 3 == 0) ? RED : GREEN);
-      }
-    }
+    bagPointer = 7;
 
-    while (true) {
-      for (int8_t i = 0; i < 7; i++) {
-        Tetris::piecePreview(i);
-        delay(2000);
-      }
+    while (! digitalRead(BUTTON_MENU)) {
+      createPiece();
+      delay(3000);
     }
   }
 
-  void piecePreview(uint8_t index) {
-    if (index > 7) {
-      // ????
-      return;
+  void displayPiece(Piece piece) {
+    // TODO?
+  }
+
+  void createPiece() {
+    fallingPiece = previewPiece;
+
+    // get the next preview piece
+    bagPointer++;
+    if (bagPointer >= 7) {
+      // create a new bag
+      // initialize sorted
+      for (int8_t i = 0; i < 8; i++) {
+        bag[i] = i;
+      }
+
+      // randomize using Fisher–Yates shuffle
+      for (int8_t i = 0; i < 7-1; i++) {
+        int8_t r = random(i, 7);
+        uint8_t temp = bag[i];
+        bag[i] = bag[r];  
+        bag[r] = temp;  
+      }
+      bagPointer = 0;
+    }
+    previewPiece = Pieces[bag[bagPointer]];
+
+    // show the preview piece
+    for (int8_t i = 0; i < 8; i++) {
+      tetrisBlock(12 + (i % 4),  i >> 2,      ((previewPiece.upperShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
+      tetrisBlock(12 + (i % 4), (i >> 2) + 2, ((previewPiece.lowerShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
     }
 
-    uint8_t upper = Pieces[index].upperShape;
-    uint8_t lower = Pieces[index].lowerShape;
-    uint8_t color = Pieces[index].color;
+    // TODO: show piece
 
-    for (uint8_t i = 0; i < 8; i++) {
-      tetrisBlock(12 + (i % 4), i >> 2,       ((upper & 128) == 0) ? BLACK : color);
-      tetrisBlock(12 + (i % 4), (i >> 2) + 2, ((lower & 128) == 0) ? BLACK : color);
-      upper <<= 1;
-      lower <<= 1;
-    }
+
+
+
+
+
   }
 }
