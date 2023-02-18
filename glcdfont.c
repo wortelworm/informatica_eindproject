@@ -8,18 +8,26 @@
  * @date  2022-03-23
  * @url https://github.com/DFRobot/DFRobot_RGBMatrix
  */
+
+#ifndef FONT5X7_H
+#define FONT5X7_H
+
+#ifdef ARDUINO
+
 #if !defined(ARDUINO_ARCH_SAM) && !defined(__ARDUINO_ARC__)
 #include <avr/io.h>
 #endif
 #include <avr/pgmspace.h> 
- 
-#ifndef FONT5X7_H
-#define FONT5X7_H
+
 
 // standard ascii 5x7 font
 
 static const unsigned char  font[] PROGMEM = {
-        0x00, 0x00, 0x00, 0x00, 0x00,   
+#else
+// no arduino, just put in ram instead of PROGMEM
+static const unsigned char  font[]  = {
+#endif
+    0x00, 0x00, 0x00, 0x00, 0x00,   
 	0x3E, 0x5B, 0x4F, 0x5B, 0x3E, 	
 	0x3E, 0x6B, 0x4F, 0x6B, 0x3E, 	
 	0x1C, 0x3E, 0x7C, 0x3E, 0x1C, 

@@ -1,4 +1,5 @@
 #include "snake.h"
+#include "tetris.h"
 #include "utils.h"
 
 /**
@@ -26,13 +27,19 @@ void setup() {
 
 void drawMenuBasis() {
   Utils::FillRect(0, 0, 64, 64, BLACK);
-
-  // Utils::matrix.setTextColor(RED);
-  // Utils::matrix.setCursor(15, 40);
-  // Utils::matrix.print("Press start");
+  // Utils::DrawText(18, 40, WHITE, "start");
 
   // Navigation arrows
-  // TODO
+  // left
+  for (uint8_t i = 0; i < 4; i++) {
+    Utils::DrawPixel(4 + i, 31 + i, WHITE);
+    Utils::DrawPixel(4 + i, 31 - i, WHITE);
+  }
+  // right
+  for (uint8_t i = 0; i < 4; i++) {
+    Utils::DrawPixel(60 - i, 31 + i, WHITE);
+    Utils::DrawPixel(60 - i, 31 - i, WHITE);
+  }
 
 }
 
@@ -53,6 +60,8 @@ bool readButtons() {
         Snake::Play();
         break;
       case 1:
+        Tetris::Play();
+        break;
       case 2:
         Utils::FillRect(0, 0, 64, 64, WHITE);
         break;
@@ -60,54 +69,49 @@ bool readButtons() {
 
     return true;
   }
+  bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
     if (game > 2) {
       game = 0;
     }
-    return true;
+    updateMenu = true;
   } else
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
       game = 2;
     }
-    return true;
+    updateMenu = true;
   }
   prevStateButtonRight = digitalRead(BUTTON_RIGHT);
   prevStateButtonLeft  = digitalRead(BUTTON_LEFT);
 
-  return false;
+  return updateMenu;
 }
 
 void loop() {
 
   // draw menu of the current game selected
   drawMenuBasis();
-  // switch (game) {
-  //   case 0:
-  //     // SNAKE
-  //     Utils::matrix.setTextColor(RED);
-  //     Utils::matrix.setCursor(15, 15);
-  //     Utils::matrix.print("SNAKE");
-  //     break;
-  //   case 1:
-  //     // TETRIS
-  //     Utils::matrix.setTextColor(GREEN);
-  //     Utils::matrix.setCursor(15, 15);
-  //     Utils::matrix.print("TETRIS");
-  //     break;
-  //   case 2:
-  //     // 2048
-  //     Utils::matrix.setTextColor(BLUE);
-  //     Utils::matrix.setCursor(15, 15);
-  //     Utils::matrix.print("2048");
-  //     break;
-  //   default:
-  //     // ?????
-  //     game = 0;
-  //     break;
-  // }
+  switch (game) {
+    case 0:
+      // SNAKE
+      Utils::DrawText(18, 28, RED, "SNAKE");
+      break;
+    case 1:
+      // TETRIS
+      Utils::DrawText(15, 28, GREEN, "TETRIS");
+      break;
+    case 2:
+      // 2048
+      Utils::DrawText(21, 28, BLUE, "2048");
+      break;
+    default:
+      // ?????
+      game = 0;
+      return;
+  }
 
   while (! readButtons()) {
     delay(10);

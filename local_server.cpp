@@ -4,6 +4,7 @@
  * 
  */
 
+#ifndef ARDUINO
 #ifndef _LOCAL_SERVER_CPP
 #define _LOCAL_SERVER_CPP
 
@@ -24,6 +25,8 @@ bool digitalRead(int pin) {
   return c == '1';
 }
 
+uint8_t buffer[4096];
+
 
 namespace Utils {
   std::ofstream output_file;
@@ -33,11 +36,7 @@ namespace Utils {
   }
 
   static void Init() {
-
-  }
-
-  static uint8_t Color222(uint8_t r, uint8_t g, uint8_t b) {
-    return ((r & 3) << 4) + ((g & 3) << 2) + (b & 3);
+    memset(buffer, 0, 4096);
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint8_t color) {
@@ -45,7 +44,7 @@ namespace Utils {
       return;
     }
 
-
+    buffer[x + y*64] = color;
     // write to file
     Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
     Utils::output_file.seekp((x + y * 64), std::ios::beg);
@@ -53,12 +52,20 @@ namespace Utils {
     Utils::output_file.close();
   }
 
+  static void writeBuffer() {
+    Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
+    Utils::output_file.write((char*) buffer, 4096);
+    Utils::output_file.close();
+  }
+
   static void FillRect(int8_t x, int8_t y, int8_t width, int8_t height, int16_t color) {
     for (int8_t i = 0; i < width; i++) {
       for (int8_t j = 0; j < height; j++) {
-        DrawPixel(x + i, y + j, color);
+        buffer[(x+i) + (y+j)*64] = color;
       }
     }
+    Utils::writeBuffer();
+    Utils::Delay(width * height / 20);
   }
 }
 
@@ -66,6 +73,7 @@ namespace Utils {
 // Definitions of arduino functions absend in native c++
 #define delay Utils::Delay
 #define random(low, high) (rand() % (high - low) + low)
+#define pgm_read_byte(x) *((uint8_t*) (x))
 
 
 #define BUTTON_LEFT  1
@@ -75,14 +83,9 @@ namespace Utils {
 #define BUTTON_START 5
 #define BUTTON_MENU  6
 
-#define BLACK 0
-#define WHITE Utils::Color222(3, 3, 3)
-#define RED   Utils::Color222(3, 0, 0)
-#define GREEN Utils::Color222(0, 3, 0)
-#define BLUE  Utils::Color222(0, 0, 3)
-
 #include "informatica_eindproject.ino"
 #include "snake.cpp"
+#include "tetris.cpp"
 
 
 
@@ -92,8 +95,9 @@ int main() {
   //   loop();
   // }
 
-  Snake::Play();
+  Tetris::Play();
 }
 
 
+#endif
 #endif

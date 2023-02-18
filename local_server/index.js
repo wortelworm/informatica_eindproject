@@ -41,4 +41,4 @@ setInterval(() => {
     fs.closeSync(output);
 
     current_connection.send(contents);
-}, 200);
+}, 50);

@@ -6,6 +6,21 @@
  * 
  */
 
+// colors used both in local testing as in arduino
+#define BLACK    0    // 000000
+#define WHITE   63    // 111111
+
+#define RED     48    // 110000
+#define GREEN   12    // 001100
+#define BLUE     3    // 000011
+
+#define CYAN    15    // 001111
+#define MAGENTA 51    // 110011
+#define YELLOW  60    // 111100
+
+#define PURPLE  17    // 010001
+#define ORANGE  52    // 110100
+
 #ifndef ARDUINO
 // this is local testing
 #include "local_server.cpp"
@@ -34,13 +49,6 @@
 #define WIDTH     64
 #define _HIGH	    64
 
-// TODO: define colors
-#define BLACK 0
-#define WHITE Utils::Color333(7, 7, 7)
-#define RED   Utils::Color333(7, 0, 0)
-#define GREEN Utils::Color333(0, 7, 0)
-#define BLUE  Utils::Color333(0, 0, 7)
-
 namespace Utils {
   static DFRobot_RGBMatrix matrix(PIN_LA, PIN_LB, PIN_LC, PIN_LD, PIN_LE, PIN_CLOCK, PIN_LATCH, PIN_OUTPUT_ENABLED, false, WIDTH, _HIGH);
 
@@ -52,10 +60,6 @@ namespace Utils {
     pinMode(BUTTON_UP,    INPUT);
     pinMode(BUTTON_START, INPUT);
     pinMode(BUTTON_MENU,  INPUT);
-  }
-
-  static uint16_t Color222(uint8_t r, uint8_t g, uint8_t b) {
-    return matrix.Color222(r, g, b);
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint16_t color) {
@@ -72,3 +76,46 @@ namespace Utils {
 }
 
 #endif
+
+#include "glcdfont.c"
+
+namespace Utils {
+  static void DrawText(uint8_t cursor_x, uint8_t cursor_y, uint8_t color, const char str[]) {
+    for (uint8_t i = 0; i < strlen(str); i++) {
+      if (str[i] == '\n' || str[i] == '\r') {
+        // skip em
+      } else {
+        // drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor,);
+        if((cursor_x >= 64)	|| (cursor_y >= 64) ||(cursor_x < 5) || (cursor_y < 7)) {
+          // clips, dont draw
+          continue;
+        }
+
+        // draw line by line
+        for (int8_t j=0; j<6; j++ ) {
+          uint8_t line;
+          if (j == 5) {
+            line = 0x0;
+          } else {
+            line = pgm_read_byte(font+(str[i]*5)+j);
+          }
+          
+
+          for (int8_t k = 0; k<8; k++) {
+            if (line & 0x1) {
+              Utils::DrawPixel(cursor_x+j, cursor_y+k, color);
+            }
+            // for now, no background color
+            // else if (bg != color) {
+            //   Utils::DrawPixel(cursor_x+j, cursor_y+k, bg);
+            // }
+            line >>= 1;
+          }
+        }
+
+
+        cursor_x += 6;
+      }
+    }
+  }
+}

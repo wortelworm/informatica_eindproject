@@ -9,7 +9,9 @@
                     const row = document.createElement('tr');
                     for (let j = 0; j < 64; j++) {
                         row.appendChild(document.createElement('td'));
+                        row.children[j].className = `${j} ${i}`;
                     }
+                    row.className = i;
                     table.appendChild(row);
                 }
 
@@ -38,8 +40,8 @@
                     's': 2,
                     'd': 3,
                     'w': 4,
-                    'g': 5,
-                    'j': 6
+                    'h': 5,
+                    'k': 6
                 }
                 let input = [0, 0, 0, 0, 0, 0];
                 document.onkeydown = function (e) {
@@ -95,6 +97,7 @@
             }
             #table {
                 height: 578px;
+                border: 1px solid white;
             }
             #table td {
                 height: 5px;
