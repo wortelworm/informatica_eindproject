@@ -32,8 +32,11 @@ const Tetris::Piece Pieces[] = {
 
 
 namespace Tetris {
+  uint8_t field[25];
   uint8_t bag[7];
   uint8_t bagPointer;
+  uint8_t fallingX;
+  uint8_t fallingY;
   Piece fallingPiece;
   Piece previewPiece;
 
@@ -52,15 +55,76 @@ namespace Tetris {
     }
 
     bagPointer = 7;
+    fallingPiece = { 0, 0, 0, Tetris::RotationType::normal };
+    memset(field, 0, 25);
+    createPiece();
 
     while (! digitalRead(BUTTON_MENU)) {
       createPiece();
-      delay(3000);
+      while (! moveFallingPiece()) {
+        delay(500);
+      }
+      delay(1000);
     }
   }
 
   void displayPiece(Piece piece) {
     // TODO?
+  }
+
+  bool moveFallingPiece() {
+    // check for collision
+    fallingY++;
+    for (int8_t i = 0; i < 8; i++) {
+      uint8_t upperpos = (fallingX + (i%4)) + 10 * (fallingY + (i/4));
+      uint8_t lowerpos = upperpos + 20;
+
+      if (fallingPiece.upperShape&(1<<(7-i)) != 0) {
+        // block of the piece here
+        if (fallingY+1 + (i/4) >= 20) {
+          // collision with bottom of the screen
+          return true;
+        }
+        if (field[upperpos%8]&(upperpos/8) != 0) {
+          // collision with something on the field
+          return true;
+        }
+      }
+
+      if (fallingPiece.lowerShape&(1<<(7-i)) != 0) {
+        // block of the piece here
+        if (fallingY+1 + (i/4) + 2 >= 20) {
+          // collision with bottom of the screen
+          return true;
+        }
+        if (field[lowerpos%8]&(lowerpos/8) != 0) {
+          // collision with something on the field
+          return true;
+        }
+      }
+    }
+    
+    // remove the current drawing
+    for (int8_t i = 0; i < 8; i++) {
+      if ((fallingPiece.upperShape & (1 << (7 - i))) != 0) {
+        tetrisBlock(fallingX+(i%4), fallingY-1 +(i>>2),       BLACK);
+      }
+      if ((fallingPiece.lowerShape & (1 << (7 - i))) != 0) {
+        tetrisBlock(fallingX+(i%4), fallingY-1 +(i>>2) + 2, BLACK);
+      }
+    }
+
+    // add updated drawing
+    for (int8_t i = 0; i < 8; i++) {
+      if ((fallingPiece.upperShape&(1<<(7-i))) != 0) {
+        tetrisBlock(fallingX+(i%4), fallingY+(i>>2),     fallingPiece.color);
+      }
+      if ((fallingPiece.lowerShape&(1<<(7-i))) != 0) {
+        tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
+      }
+    }
+
+    return false;
   }
 
   void createPiece() {
@@ -85,19 +149,19 @@ namespace Tetris {
       bagPointer = 0;
     }
     previewPiece = Pieces[bag[bagPointer]];
+    fallingX = 3;
+    fallingY = 0;
 
     // show the preview piece
     for (int8_t i = 0; i < 8; i++) {
-      tetrisBlock(12 + (i % 4),  i >> 2,      ((previewPiece.upperShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
+      tetrisBlock(12 + (i % 4), (i >> 2),      ((previewPiece.upperShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
       tetrisBlock(12 + (i % 4), (i >> 2) + 2, ((previewPiece.lowerShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
     }
 
-    // TODO: show piece
-
-
-
-
-
-
+    // show piece
+    for (int8_t i = 0; i < 8; i++) {
+      tetrisBlock(fallingX + (i % 4), fallingY + (i >> 2),      ((fallingPiece.upperShape & (1 << (7 - i))) == 0) ? BLACK : fallingPiece.color);
+      tetrisBlock(fallingX + (i % 4), fallingY + (i >> 2) + 2, ((fallingPiece.lowerShape & (1 << (7 - i))) == 0) ? BLACK : fallingPiece.color);
+    }
   }
 }
