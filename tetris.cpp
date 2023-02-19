@@ -39,6 +39,16 @@ namespace Tetris {
     switch (piece.rotation) {
       case RotationType::none:
         break;
+      case RotationType::special:
+        // this will only work for the I piece
+        // switch lower & 4 and upper & 1
+        if ((u&1) == 0) {
+          u |=  1;
+          l &= ~4;
+        } else {
+          u &= ~1;
+          l |=  4;
+        }
       case RotationType::normal:
         // rotate around 1, 1
         // first the side pieces
@@ -82,9 +92,6 @@ namespace Tetris {
         // top right  = top left
         setBitThingy(u, 32, temp ? 0 : 1,1);
 
-        break;
-      case RotationType::special:
-        // TODO!!!
         break;
     }
     piece.upperShape = u;
@@ -353,7 +360,7 @@ namespace Tetris {
           readInputs();
           delay(20);
           if (speedupFlag) {
-            i += 4;
+            i += 10;
           }
         }
       }
