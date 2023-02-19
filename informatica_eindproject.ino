@@ -7,7 +7,6 @@
  * game on a 15x15 board displayed on a 64x64 led matrix 
  * 
  * TODOS:
- *    make a menu screen
  *    library optimization/specification
  * 
  */

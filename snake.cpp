@@ -26,45 +26,7 @@ namespace Snake {
 
   int8_t foodX;
   int8_t foodY;
-
-  void Play() {
-    Snake::reset();
-
-    while (! gameOver) {
-      Snake::move(true);
-
-      // maybe TODO this as a interrupt
-      for (char i = 0; i < 10; i++) {
-        Snake::readDirection();
-
-        delay(10);
-      }      
-    }
-
-    // GameOver screen
-    for (int i = 0; i < 27; i++) {
-      for (int j = 0; j < 20; j++) {
-        Utils::DrawPixel(20 + i, 22 + j, BLACK);
-      }
-    }
-    Utils::DrawText(22, 24, RED, "GAME");
-    Utils::DrawText(22, 33, RED, "OVER");
-
-    for (int i = 0; i < 27; i++) {
-      Utils::DrawPixel(20 + i, 21, WHITE);
-      Utils::DrawPixel(20 + i, 42, WHITE);
-    }
-    for (int j = 0; j < 20; j++) {
-      Utils::DrawPixel(19, 22 + j, WHITE);
-      Utils::DrawPixel(47, 22 + j, WHITE);
-    }
-
-    // wait until start or menu button is pressed
-    while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {
-      delay(10);
-    }
-  }
-
+  
 
   // draws the food on the board
   void drawFood() {
@@ -263,5 +225,43 @@ namespace Snake {
     // memset(snakeX, -1, 1);
     Snake::move(false);
     Snake::move(false);
+  }
+
+  void Play() {
+    Snake::reset();
+
+    while (! gameOver) {
+      Snake::move(true);
+
+      // maybe TODO this as a interrupt
+      for (char i = 0; i < 10; i++) {
+        Snake::readDirection();
+
+        delay(10);
+      }      
+    }
+
+    // GameOver screen
+    for (int i = 0; i < 27; i++) {
+      for (int j = 0; j < 20; j++) {
+        Utils::DrawPixel(20 + i, 22 + j, BLACK);
+      }
+    }
+    Utils::DrawText(22, 24, RED, "GAME");
+    Utils::DrawText(22, 33, RED, "OVER");
+
+    for (int i = 0; i < 27; i++) {
+      Utils::DrawPixel(20 + i, 21, WHITE);
+      Utils::DrawPixel(20 + i, 42, WHITE);
+    }
+    for (int j = 0; j < 20; j++) {
+      Utils::DrawPixel(19, 22 + j, WHITE);
+      Utils::DrawPixel(47, 22 + j, WHITE);
+    }
+
+    // wait until start or menu button is pressed
+    while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
   }
 }

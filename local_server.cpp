@@ -67,9 +67,14 @@ namespace Utils {
     Utils::writeBuffer();
     Utils::Delay(width * height / 20);
   }
+
+  static void swapPixels(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
+    uint8_t temp = buffer[x1 + y1*64];
+    buffer[x1 + y1*64] = buffer[x2 + y2*64];
+    buffer[x2 + y2*64] = temp;
+  }
 }
 
-// TODO: define digitalWrite for the buttons
 // Definitions of arduino functions absend in native c++
 #define delay Utils::Delay
 #define random(low, high) (rand() % (high - low) + low)

@@ -3,17 +3,6 @@
 
 namespace Tetris {
   void Play();
-  void createPiece();
-  
-  /**
-   * moves the currently falling piece down, draws it
-   * while checking for collisions
-   * 
-   * @returns true if the piece stops with falling, false otherwise
-   */
-  bool moveFallingPiece();
-  void endOfFalling();
-  void readInputs();
 
   enum RotationType {
     normal, special, none
