@@ -1,5 +1,6 @@
 #include "snake.h"
 #include "tetris.h"
+#include "game2048.h"
 #include "utils.h"
 
 /**
@@ -62,7 +63,7 @@ bool readButtons() {
         Tetris::Play();
         break;
       case 2:
-        Utils::FillRect(0, 0, 64, 64, WHITE);
+        Game2048::Play();
         break;
     }
 

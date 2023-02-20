@@ -9,6 +9,7 @@
 // colors used both in local testing as in arduino
 #define BLACK    0    // 000000
 #define WHITE   63    // 111111
+#define GREY    21    // 010101
 
 #define RED     48    // 110000
 #define GREEN   12    // 001100
@@ -86,7 +87,7 @@ namespace Utils {
         // skip em
       } else {
         // drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor,);
-        if((cursor_x >= 64)	|| (cursor_y >= 64) ||(cursor_x < 5) || (cursor_y < 7)) {
+        if((cursor_x >= 64)	|| (cursor_y >= 64) ||(cursor_x < 0) || (cursor_y < 0)) {
           // clips, dont draw
           continue;
         }

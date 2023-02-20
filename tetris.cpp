@@ -2,9 +2,6 @@
  * this is code to simulate the game of tetris
  * for the used rules, see: https://tetris.wiki/Tetris_Guideline
  * 
- * TODOS:
- *    sound effects & music
- *    high score?
  */
 
 #include "tetris.h"

@@ -90,6 +90,7 @@ namespace Utils {
 #include "informatica_eindproject.ino"
 #include "snake.cpp"
 #include "tetris.cpp"
+#include "game2048.cpp"
 
 
 
