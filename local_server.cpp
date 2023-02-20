@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <fstream>
 #include <synchapi.h>
-#include <string>
 
 
 std::ifstream input_file;
