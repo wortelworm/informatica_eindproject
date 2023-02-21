@@ -169,7 +169,7 @@ namespace Snake {
       gameOver = true;
       return;
     } else {
-      // TODO: more efficient algoritm. this one is shit.
+      // TODO?: more efficient algoritm. this one is shit.
       for (int i = 1; i < snakeLength; i++) {
         if (newHeadX == snakeX[i] && newHeadY == snakeY[i]) {
           gameOver = true;
@@ -242,22 +242,33 @@ namespace Snake {
     }
 
     // GameOver screen
-    for (int i = 0; i < 27; i++) {
+    for (int i = 0; i < 56; i++) {
       for (int j = 0; j < 20; j++) {
-        Utils::DrawPixel(20 + i, 22 + j, BLACK);
+        Utils::DrawPixel(4 + i, 22 + j, BLACK);
       }
     }
-    Utils::DrawText(22, 24, RED, "GAME");
-    Utils::DrawText(22, 33, RED, "OVER");
 
-    for (int i = 0; i < 27; i++) {
-      Utils::DrawPixel(20 + i, 21, WHITE);
-      Utils::DrawPixel(20 + i, 42, WHITE);
+    // horizontal lines
+    for (int i = 0; i < 56; i++) {
+      Utils::DrawPixel(4 + i, 21, WHITE);
+      Utils::DrawPixel(4 + i, 42, WHITE);
     }
+    // vertical lines
     for (int j = 0; j < 20; j++) {
-      Utils::DrawPixel(19, 22 + j, WHITE);
-      Utils::DrawPixel(47, 22 + j, WHITE);
+      Utils::DrawPixel(3,  22 + j, WHITE);
+      Utils::DrawPixel(60, 22 + j, WHITE);
     }
+
+    Utils::DrawText(6,  24, RED, "GAME");
+    Utils::DrawText(35, 24, RED, "OVER");
+    Utils::DrawText(6,  33, RED, "Score");
+    Utils::DrawPixel(36, 35, RED);
+    Utils::DrawPixel(36, 39, RED);
+
+    char buffer[3];
+    itoa(snakeLength - 3, buffer, 10);
+    Utils::DrawText(41, 33, RED, buffer);
+
 
     // wait until start or menu button is pressed
     while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {

@@ -10,6 +10,7 @@
 namespace Game2048 {
   uint8_t field[16];
   bool gameOver;
+  uint32_t score;
 
   void drawTile(uint8_t x, uint8_t y) {
     Utils::FillRect(x*16 + 1, y*16 + 1, 14, 14, BLACK);
@@ -91,7 +92,7 @@ namespace Game2048 {
     field[pos] = number;
     drawTile(pos%4, pos/4);
 
-    // TODO: check for gameOver properly
+    // check for gameOver properly
     gameOver = true;
     for (int8_t y = 0; y < 4; y++) {
       for (int8_t x = 0; x < 4; x++) {
@@ -123,20 +124,31 @@ namespace Game2048 {
    * require slightly different code
    */
   void waitDoMovement() {
+    if (gameOver) {
+      return;
+    }
+
     bool anyChange = false;
     while (! anyChange) {
       // wait until new button press
       while (digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP)) {
         delay(10);
       }
-      while (! (digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP))) {
+      while (! (digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP) || digitalRead(BUTTON_MENU))) {
         delay(10);
+      }
+
+      if (digitalRead(BUTTON_MENU)) {
+        // suicide :(
+        gameOver = true;
+        return;
       }
 
       // what button?
       if (digitalRead(BUTTON_LEFT)) {
         // high X goes to low X
         for (int8_t y = 0; y < 4; y++) {
+          int8_t minX = 0;
           for (int8_t originalX = 1; originalX < 4; originalX++) {
             uint8_t value = field[y*4 + originalX];
             if (value == 0) {
@@ -147,7 +159,7 @@ namespace Game2048 {
             // move this tile over?
             int8_t newX = originalX-1;
             bool merge = false;
-            for (; newX >= 0; newX--) {
+            for (; newX >= minX; newX--) {
               if (field[y*4 + newX] == value) {
                 merge = true;
                 newX--;
@@ -167,8 +179,15 @@ namespace Game2048 {
             }
 
             anyChange = true;
+            if (merge) {
+              // this tile cannot merge again this move
+              minX = newX + 1;
+              score += 1<<value;
+              field[y*4 + newX] = value + 1;
+            } else {
+              field[y*4 + newX] = value;
+            }
 
-            field[y*4 + newX] = merge ? value + 1 : value;
             field[y*4 + originalX] = 0;
             drawTile(newX, y);
             drawTile(originalX, y);
@@ -177,6 +196,7 @@ namespace Game2048 {
       } else if (digitalRead(BUTTON_DOWN)) {
         // low Y goes to high Y
         for (int8_t x = 0; x < 4; x++) {
+          int8_t maxY = 3;
           for (int8_t originalY = 2; originalY >= 0; originalY--) {
             uint8_t value = field[originalY*4 + x];
             if (value == 0) {
@@ -187,7 +207,7 @@ namespace Game2048 {
             // move this tile over?
             int8_t newY = originalY+1;
             bool merge = false;
-            for (; newY < 4; newY++) {
+            for (; newY <= maxY; newY++) {
               if (field[newY*4 + x] == value) {
                 merge = true;
                 newY++;
@@ -207,8 +227,15 @@ namespace Game2048 {
             }
 
             anyChange = true;
+            if (merge) {
+              // this tile cannot merge again this move
+              maxY = newY - 1;
+              score += 1<<value;
+              field[newY*4 + x] = value + 1;
+            } else {
+              field[newY*4 + x] = value;
+            }
 
-            field[newY*4 + x] = merge ? value + 1 : value;
             field[originalY*4 + x] = 0;
             drawTile(x, newY);
             drawTile(x, originalY);
@@ -217,6 +244,7 @@ namespace Game2048 {
       } else if (digitalRead(BUTTON_RIGHT)) {
         // low X goes to high X
         for (int8_t y = 0; y < 4; y++) {
+          int8_t maxX = 3;
           for (int8_t originalX = 2; originalX >= 0; originalX--) {
             uint8_t value = field[y*4 + originalX];
             if (value == 0) {
@@ -227,7 +255,7 @@ namespace Game2048 {
             // move this tile over?
             int8_t newX = originalX+1;
             bool merge = false;
-            for (; newX < 4; newX++) {
+            for (; newX <= maxX; newX++) {
               if (field[y*4 + newX] == value) {
                 merge = true;
                 newX++;
@@ -247,8 +275,15 @@ namespace Game2048 {
             }
 
             anyChange = true;
+            if (merge) {
+              // this tile cannot merge again this move
+              maxX = newX - 1;
+              score += 1<<value;
+              field[y*4 + newX] = value + 1;
+            } else {
+              field[y*4 + newX] = value;
+            }
 
-            field[y*4 + newX] = merge ? value + 1 : value;
             field[y*4 + originalX] = 0;
             drawTile(newX, y);
             drawTile(originalX, y);
@@ -258,6 +293,7 @@ namespace Game2048 {
       } else if (digitalRead(BUTTON_UP)) {
         // high Y goes to low Y
         for (int8_t x = 0; x < 4; x++) {
+          int8_t minY = 0;
           for (int8_t originalY = 1; originalY < 4; originalY++) {
             uint8_t value = field[originalY*4 + x];
             if (value == 0) {
@@ -268,7 +304,7 @@ namespace Game2048 {
             // move this tile over?
             int8_t newY = originalY-1;
             bool merge = false;
-            for (; newY >= 0; newY--) {
+            for (; newY >= minY; newY--) {
               if (field[newY*4 + x] == value) {
                 merge = true;
                 newY--;
@@ -288,8 +324,15 @@ namespace Game2048 {
             }
 
             anyChange = true;
+            if (merge) {
+              // this tile cannot merge again this move
+              minY = newY + 1;
+              score += 1<<value;
+              field[newY*4 + x] = value + 1;
+            } else {
+              field[newY*4 + x] = value;
+            }
 
-            field[newY*4 + x] = merge ? value + 1 : value;
             field[originalY*4 + x] = 0;
             drawTile(x, newY);
             drawTile(x, originalY);
@@ -313,21 +356,47 @@ namespace Game2048 {
     }
 
     memset(field, 0, 16);
-
+    score = 0;
     gameOver = false;
-    spawnNextBlock();
 
     while (! gameOver) {
-      waitDoMovement();
       spawnNextBlock();
+      waitDoMovement();
     }
 
     // TODO: gameover or win screen
-    delay(1000);
-    for (uint16_t i = 0; i < 4096; i++) {
-      Utils::DrawPixel(i%64,i/64, random(0, 64));
+    for (int i = 0; i < 56; i++) {
+      for (int j = 0; j < 20; j++) {
+        Utils::DrawPixel(4 + i, 22 + j, BLACK);
+      }
     }
 
-    delay(5000);
+    // horizontal lines
+    for (int i = 0; i < 56; i++) {
+      Utils::DrawPixel(4 + i, 21, WHITE);
+      Utils::DrawPixel(4 + i, 42, WHITE);
+    }
+    // vertical lines
+    for (int j = 0; j < 20; j++) {
+      Utils::DrawPixel(3,  22 + j, WHITE);
+      Utils::DrawPixel(60, 22 + j, WHITE);
+    }
+
+    Utils::DrawText(6,  24, RED, "GAME");
+    Utils::DrawText(35, 24, RED, "OVER");
+    Utils::DrawText(6,  33, RED, "Score");
+    Utils::DrawPixel(36, 35, RED);
+    Utils::DrawPixel(36, 39, RED);
+
+    char buffer[3];
+    // TODO: score calulation displaying or something idk
+    itoa(score - 3, buffer, 10);
+    Utils::DrawText(41, 33, RED, buffer);
+
+
+    // wait until start or menu button is pressed
+    while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
   }
 }

@@ -7,8 +7,9 @@
 #include "tetris.h"
 #include "utils.h"
 
-#define tetrisPixel(x, y, color) Utils::DrawPixel(x + 2, y + 2, color);
-#define tetrisBlock(x, y, color) Utils::FillRect((x)*3 + 2, (y)*3 + 2, 3, 3, color);
+#define tetrisPixel(x, y, color) Utils::DrawPixel(x + 2, y + 2, color)
+#define tetrisBlock(x, y, color) Utils::FillRect((x)*3 + 2, (y)*3 + 2, 3, 3, color)
+#define ghostPixel(x, y, color) Utils::DrawPixel((x)*3 + 3, (y)*3 + 3, color)
 
 /// A = B from byte to bit level
 #define setBitThingy(a, aMask, b, bMask) a ^= ((((a)&(aMask)) == 0) != (((b)&(bMask)) == 0) ) ? (aMask) : 0;
@@ -16,6 +17,10 @@
 
 namespace Tetris {
 
+  uint32_t score;
+  uint8_t subScore;
+  uint8_t level;
+  uint8_t lines;
   uint8_t field[25];
   uint8_t bag[7];
   uint8_t bagPointer;
@@ -23,10 +28,12 @@ namespace Tetris {
   uint8_t fallingY;
   Piece fallingPiece;
   Piece previewPiece;
+  uint8_t ghostY;
   bool leftWasPressed = false;
   bool rightWasPressed = false;
   bool rotationWasPressed = false;
   bool speedupFlag = false;
+  bool returnToMenu = false;
 
   // rotates the piece 90 degrees clockwise
   Piece rotatePiece(Piece piece) {
@@ -97,36 +104,6 @@ namespace Tetris {
   }
 
 
-  void redrawFalling(int8_t newX, int8_t newY, Piece newPiece) {
-    // remove the current drawing
-    for (int8_t i = 0; i < 8; i++) {
-      if ((fallingPiece.upperShape & (1 << (7 - i))) != 0) {
-        tetrisBlock(fallingX+(i%4), fallingY +(i>>2),     BLACK);
-      }
-      if ((fallingPiece.lowerShape & (1 << (7 - i))) != 0) {
-        tetrisBlock(fallingX+(i%4), fallingY +(i>>2) + 2, BLACK);
-      }
-    }
-
-    fallingX = newX;
-    fallingY = newY;
-    fallingPiece = newPiece;
-
-    // draw at updated position
-    for (int8_t i = 0; i < 8; i++) {
-      if ((fallingPiece.upperShape&(1<<(7-i))) != 0) {
-        tetrisBlock(fallingX+(i%4), fallingY+(i>>2),   fallingPiece.color);
-      }
-      if ((fallingPiece.lowerShape&(1<<(7-i))) != 0) {
-        tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
-      }
-    }
-  }
-  void redrawFalling(int8_t newX, int8_t newY) {
-    redrawFalling(newX, newY, fallingPiece);
-  }
-
-
   bool wouldCollide(int8_t x, int8_t y, Piece piece) {
     // check for collision
     for (int8_t i = 0; i < 8; i++) {
@@ -162,6 +139,66 @@ namespace Tetris {
   }
 
 
+  void calculateGhostY() {
+    if (fallingPiece.color == 0) {
+      // no current falling piece, nothing to do here
+      return;
+    }
+
+    if (wouldCollide(fallingX, fallingY+1, fallingPiece)) {
+      ghostY = fallingY;
+      return;
+    }
+
+    // try moving a copy of the current piece down until it hits something
+    ghostY = fallingY+1;
+    while (! wouldCollide(fallingX, ghostY, fallingPiece)) {
+      ghostY++;
+    }
+    ghostY--;
+  }
+
+
+  void redrawFalling(int8_t newX, int8_t newY, Piece newPiece) {
+    // remove the current falling piece and ghost piece
+    for (int8_t i = 0; i < 8; i++) {
+      if ((fallingPiece.upperShape & (1 << (7 - i))) != 0) {
+        ghostPixel( fallingX+(i%4), ghostY   +(i>>2),     BLACK);
+        tetrisBlock(fallingX+(i%4), fallingY +(i>>2),     BLACK);
+      }
+      if ((fallingPiece.lowerShape & (1 << (7 - i))) != 0) {
+        ghostPixel( fallingX+(i%4), ghostY   +(i>>2) + 2, BLACK);
+        tetrisBlock(fallingX+(i%4), fallingY +(i>>2) + 2, BLACK);
+      }
+    }
+    
+    bool recalculateGhostY = fallingX != newX || fallingPiece.upperShape != newPiece.upperShape || fallingPiece.lowerShape != newPiece.lowerShape;
+
+    fallingX = newX;
+    fallingY = newY;
+    fallingPiece = newPiece;
+
+    if (recalculateGhostY) {
+      calculateGhostY();
+    }
+
+    // draw at updated position
+    for (int8_t i = 0; i < 8; i++) {
+      if ((fallingPiece.upperShape&(1<<(7-i))) != 0) {
+        ghostPixel (fallingX+(i%4), ghostY  +(i>>2),   fallingPiece.color);
+        tetrisBlock(fallingX+(i%4), fallingY+(i>>2),   fallingPiece.color);
+      }
+      if ((fallingPiece.lowerShape&(1<<(7-i))) != 0) {
+        ghostPixel (fallingX+(i%4), ghostY  +(i>>2)+2, fallingPiece.color);
+        tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
+      }
+    }
+  }
+  void redrawFalling(int8_t newX, int8_t newY) {
+    redrawFalling(newX, newY, fallingPiece);
+  }
+
+
   /**
    * returns true if piece created successfully
    * returns false if game over
@@ -190,19 +227,23 @@ namespace Tetris {
     previewPiece = Pieces[bag[bagPointer]];
     fallingX = 3;
     fallingY = 0;
+    calculateGhostY();
 
     // show the preview piece
+    // any non rotated piece has nothing in its lowershape
+    // so dont draw over the 'Level' text
     for (int8_t i = 0; i < 8; i++) {
       tetrisBlock(12 + (i % 4), (i >> 2),     ((previewPiece.upperShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
-      tetrisBlock(12 + (i % 4), (i >> 2) + 2, ((previewPiece.lowerShape & (1 << (7 - i))) == 0) ? BLACK : previewPiece.color);
     }
 
     // show piece
     for (int8_t i = 0; i < 8; i++) {
       if ((fallingPiece.upperShape & (1 << (7 - i))) != 0) {
+        ghostPixel (fallingX+(i%4), ghostY  +(i>>2),   fallingPiece.color);
         tetrisBlock(fallingX+(i%4), fallingY+(i>>2),   fallingPiece.color);
       }
       if ((fallingPiece.lowerShape & (1 << (7 - i))) != 0) {
+        ghostPixel (fallingX+(i%4), ghostY  +(i>>2)+2, fallingPiece.color);
         tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
       }
     }
@@ -254,6 +295,67 @@ namespace Tetris {
     rotationWasPressed = digitalRead(BUTTON_UP);
 
     speedupFlag = digitalRead(BUTTON_DOWN);
+
+    if (digitalRead(BUTTON_MENU)) {
+      // pause the game
+      Utils::DrawText(34, 52, RED, "Pause");
+
+      // until menu button is unpressed
+      while (digitalRead(BUTTON_MENU)) {
+        delay(10);
+      }
+      
+      // and menu or start button is pressed
+      while (! (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START))) {
+        delay(10);
+      }
+
+      if (digitalRead(BUTTON_MENU)) {
+        // return to main menu
+        returnToMenu = true;
+        return;
+      }
+
+      // resume the game
+      Utils::FillRect(34, 52, 29, 7, BLACK);
+    }
+  }
+
+
+  void drawScore() {
+    if (score > 99999) {
+      score = 99999;
+    }
+    // clear previous
+    Utils::FillRect(34, 39, 29, 7, BLACK);
+
+    // draw current
+    char buffer[5] = {};
+    itoa(score, buffer, 10);
+    uint8_t numberOfDigits = 5;
+    for (; numberOfDigits > 0; numberOfDigits--) {
+      if (buffer[numberOfDigits-1] != 0) {
+        // numberOfDigits++;
+        break;
+      }
+    }
+    Utils::DrawText(34 + 6*(5 - numberOfDigits), 39, RED, buffer);
+
+    if (score >= 99999) {
+      // HOW?? Sure, you win
+      Utils::DrawText(34, 47, GREEN, "You");
+      Utils::DrawText(34, 55, GREEN, "WON!");
+      returnToMenu = true;
+    
+      // wait till button press before exit
+      while (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START)) {
+        delay(10);
+      }
+
+      while (! (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START))) {
+        delay(10);
+      }
+    }
   }
 
 
@@ -273,6 +375,8 @@ namespace Tetris {
 
     fallingPiece = { 0, 0, 0, RotationType::none };
 
+    uint8_t rowsCompleted = 0;
+
     for (uint8_t i = 0; i < 4; i++) {
       if (fallingY + i >= 20) {
         break;
@@ -289,6 +393,7 @@ namespace Tetris {
 
       if (completed) {
         // Woooo
+        rowsCompleted++;
         // flash it white
         for (uint8_t j = 0; j < 10; j++) {
           tetrisBlock(j, fallingY + i, WHITE);
@@ -329,13 +434,51 @@ namespace Tetris {
         }
       }
     }
+
+    switch (rowsCompleted) {
+      case 1:
+        score += 1 * level;
+        break;
+      case 2:
+        score += 3 * level;
+        break;
+      case 3:
+        score += 5 * level;
+        break;
+      case 4:
+        score += 8 * level;
+        break;
+    }
+
+    if (rowsCompleted > 0) {
+      drawScore();
+    }
+
+    // every 10 lines cleared, level goes up
+    // max level is 15
+    lines += rowsCompleted;
+    if ((lines / 10) + 1 > level && level < 15) {
+      level++;
+
+      // clear
+      Utils::FillRect(57, 19, 5, 7, BLACK);
+
+      // draw current
+      if (level == 10) {
+        Utils::DrawText(52, 19, RED, "1");
+      }
+
+      char c[1];
+      itoa(level % 10, c, 10);
+      Utils::DrawText(57, 19, RED, c);
+    }
   }
 
 
   void Play() {
     Utils::FillRect(0, 0, 64, 64, BLACK);
 
-    // draw outlines of boxes
+    // draw outlines of the playing field
     for (int8_t i = 0; i < 30; i++) {
       tetrisPixel(i, -1, WHITE);
       tetrisPixel(i, 60, WHITE);
@@ -345,19 +488,39 @@ namespace Tetris {
       tetrisPixel(30, j-1, WHITE);
     }
 
+    Utils::DrawText(34, 11, RED, "Level");
+    Utils::DrawText(58, 19, RED, "1");
+    Utils::DrawText(34, 28, RED, "Score");
+    Utils::DrawText(58, 39, RED, "0");
+
+
     bagPointer = 7;
     fallingPiece = { 0, 0, 0, RotationType::normal };
+    previewPiece = { 0, 0, 0, RotationType::normal };
+    score = 99990;
+    subScore = 0;
+    level = 1;
+    lines = 0;
     memset(field, 0, 25);
     createPiece();
 
     while (createPiece()) {
       delay(500);
       while (! moveFallingPiece()) {
-        for (int8_t i = 0; i < 15; i++) {
+        for (int8_t i = 0; i < 30 - (level*2); i++) {
           readInputs();
-          delay(20);
+          if (returnToMenu) {
+            return;
+          }
+          delay(5);
           if (speedupFlag) {
             i += 10;
+            subScore += 1;
+            if (subScore >= 100) {
+              subScore %= 100;
+              score += 1;
+              drawScore();
+            }
           }
         }
       }
@@ -365,7 +528,17 @@ namespace Tetris {
       endOfFalling();
     }
 
-    // TODO: game over screen
-    delay(5000);
+    // game over!
+    Utils::DrawText(34, 47, RED, "Game");
+    Utils::DrawText(34, 55, RED, "Over");
+
+    // wait till button press before exit
+    while (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START)) {
+      delay(10);
+    }
+
+    while (! (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START))) {
+      delay(10);
+    }
   }
 }
