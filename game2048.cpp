@@ -11,6 +11,7 @@ namespace Game2048 {
   uint8_t field[16];
   bool gameOver;
   uint32_t score;
+  bool win;
 
   void drawTile(uint8_t x, uint8_t y) {
     Utils::FillRect(x*16 + 1, y*16 + 1, 14, 14, BLACK);
@@ -57,6 +58,8 @@ namespace Game2048 {
       case 11:
         Utils::DrawText(x*16 + 2, y * 16 + 1, RED, "20");
         Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "48");
+        gameOver = true;
+        win = true;
         break;
       
       default:
@@ -182,7 +185,7 @@ namespace Game2048 {
             if (merge) {
               // this tile cannot merge again this move
               minX = newX + 1;
-              score += 1<<value;
+              score += 1<<(value+1);
               field[y*4 + newX] = value + 1;
             } else {
               field[y*4 + newX] = value;
@@ -230,7 +233,7 @@ namespace Game2048 {
             if (merge) {
               // this tile cannot merge again this move
               maxY = newY - 1;
-              score += 1<<value;
+              score += 1<<(value+1);
               field[newY*4 + x] = value + 1;
             } else {
               field[newY*4 + x] = value;
@@ -278,7 +281,7 @@ namespace Game2048 {
             if (merge) {
               // this tile cannot merge again this move
               maxX = newX - 1;
-              score += 1<<value;
+              score += 1<<(value+1);
               field[y*4 + newX] = value + 1;
             } else {
               field[y*4 + newX] = value;
@@ -327,7 +330,7 @@ namespace Game2048 {
             if (merge) {
               // this tile cannot merge again this move
               minY = newY + 1;
-              score += 1<<value;
+              score += 1<<(value+1);
               field[newY*4 + x] = value + 1;
             } else {
               field[newY*4 + x] = value;
@@ -358,41 +361,53 @@ namespace Game2048 {
     memset(field, 0, 16);
     score = 0;
     gameOver = false;
+    win = false;
 
     while (! gameOver) {
       spawnNextBlock();
       waitDoMovement();
     }
 
-    // TODO: gameover or win screen
+    delay(5000);
+
+    // gameover or win screen
     for (int i = 0; i < 56; i++) {
-      for (int j = 0; j < 20; j++) {
-        Utils::DrawPixel(4 + i, 22 + j, BLACK);
+      for (int j = 0; j < 26; j++) {
+        Utils::DrawPixel(4 + i, 19 + j, BLACK);
       }
     }
 
     // horizontal lines
     for (int i = 0; i < 56; i++) {
-      Utils::DrawPixel(4 + i, 21, WHITE);
-      Utils::DrawPixel(4 + i, 42, WHITE);
+      Utils::DrawPixel(4 + i, 18, WHITE);
+      Utils::DrawPixel(4 + i, 45, WHITE);
     }
     // vertical lines
-    for (int j = 0; j < 20; j++) {
-      Utils::DrawPixel(3,  22 + j, WHITE);
-      Utils::DrawPixel(60, 22 + j, WHITE);
+    for (int j = 0; j < 26; j++) {
+      Utils::DrawPixel(3,  19 + j, WHITE);
+      Utils::DrawPixel(60, 19 + j, WHITE);
     }
 
-    Utils::DrawText(6,  24, RED, "GAME");
-    Utils::DrawText(35, 24, RED, "OVER");
-    Utils::DrawText(6,  33, RED, "Score");
-    Utils::DrawPixel(36, 35, RED);
-    Utils::DrawPixel(36, 39, RED);
+    if (win) {
+      Utils::DrawText(6,  20, GREEN, "You");
+      Utils::DrawText(31, 20, GREEN, "won!!");
+      Utils::DrawText(15, 29, GREEN, "Score:");
+    } else {
+      Utils::DrawText(6,  20, RED, "GAME");
+      Utils::DrawText(35, 20, RED, "OVER");
+      Utils::DrawText(15, 29, RED, "Score:");
+    }
 
-    char buffer[3];
-    // TODO: score calulation displaying or something idk
-    itoa(score - 3, buffer, 10);
-    Utils::DrawText(41, 33, RED, buffer);
-
+    char buffer[7] = {};
+    itoa(score, buffer, 10);
+    uint8_t numberOfDigits = 7;
+    for (; numberOfDigits > 0; numberOfDigits--) {
+      if (buffer[numberOfDigits-1] != 0) {
+        // numberOfDigits++;
+        break;
+      }
+    }
+    Utils::DrawText(12 + 3*(7 - numberOfDigits), 37, win ? GREEN : RED, buffer);
 
     // wait until start or menu button is pressed
     while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {

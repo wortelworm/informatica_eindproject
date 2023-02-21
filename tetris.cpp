@@ -497,7 +497,7 @@ namespace Tetris {
     bagPointer = 7;
     fallingPiece = { 0, 0, 0, RotationType::normal };
     previewPiece = { 0, 0, 0, RotationType::normal };
-    score = 99990;
+    score = 0;
     subScore = 0;
     level = 1;
     lines = 0;
