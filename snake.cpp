@@ -1,9 +1,5 @@
 /**
  * this is code to simulate the game of snake
- * 
- * TODOS:
- *    sound effects & music
- *    high score?
  */
 
 #include "snake.h"

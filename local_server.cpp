@@ -76,7 +76,7 @@ namespace Utils {
 
 // Definitions of arduino functions absend in native c++
 #define delay Utils::Delay
-#define random(low, high) (rand() % (high - low) + low)
+#define random(low, high) (rand() % ((high) - (low)) + (low))
 #define pgm_read_byte(x) *((uint8_t*) (x))
 
 
@@ -91,7 +91,7 @@ namespace Utils {
 #include "snake.cpp"
 #include "tetris.cpp"
 #include "game2048.cpp"
-
+#include "simon.cpp"
 
 
 int main() {

@@ -1,6 +1,7 @@
 #include "snake.h"
 #include "tetris.h"
 #include "game2048.h"
+#include "simon.h"
 #include "utils.h"
 
 /**
@@ -27,7 +28,6 @@ void setup() {
 
 void drawMenuBasis() {
   Utils::FillRect(0, 0, 64, 64, BLACK);
-  // Utils::DrawText(18, 40, WHITE, "start");
 
   // Navigation arrows
   // left
@@ -65,6 +65,9 @@ bool readButtons() {
       case 2:
         Game2048::Play();
         break;
+      case 3:
+        Simon::Play();
+        break;
     }
 
     return true;
@@ -72,7 +75,7 @@ bool readButtons() {
   bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
-    if (game > 2) {
+    if (game > 3) {
       game = 0;
     }
     updateMenu = true;
@@ -80,7 +83,7 @@ bool readButtons() {
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
-      game = 2;
+      game = 3;
     }
     updateMenu = true;
   }
@@ -106,6 +109,10 @@ void loop() {
     case 2:
       // 2048
       Utils::DrawText(21, 28, BLUE, "2048");
+      break;
+    case 3:
+      // simon
+      Utils::DrawText(18, 28, RED, "SIMON");
       break;
     default:
       // ?????
