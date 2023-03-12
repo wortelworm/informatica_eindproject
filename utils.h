@@ -7,29 +7,45 @@
  */
 
 // colors used both in local testing as in arduino
-#define BLACK    0    // 000000
-#define WHITE   63    // 111111
-#define GREY    21    // 010101
+// Format: RGBrgb, used to be RrGgBb
+// first the upper bits for all colors, then the lower bits for all colors
+#define BLACK    0    // 000000 -> 000000
+#define WHITE   63    // 111111 -> 111111
+#define GREY     7    // 010101 -> 000111
 
-#define RED     48    // 110000
-#define GREEN   12    // 001100
-#define BLUE     3    // 000011
+#define RED     36    // 110000 -> 100100
+#define GREEN   18    // 001100 -> 010010
+#define BLUE     9    // 000011 -> 001001
 
-#define CYAN    15    // 001111
-#define MAGENTA 51    // 110011
-#define YELLOW  60    // 111100
+#define CYAN    27    // 001111 -> 011011
+#define MAGENTA 45    // 110011 -> 101101
+#define YELLOW  54    // 111100 -> 110110
 
-#define PURPLE  17    // 010001
-#define ORANGE  52    // 110100
+#define PURPLE   5    // 010001 -> 000101
+#define ORANGE  38    // 110100 -> 100110
+
+// the original DFRobot_RGBMatrix library is used right now
+#define ORIGINAL_LIB true
 
 #ifndef ARDUINO
 // this is local testing
 #include "local_server.cpp"
 #else
 // arduino
-
 #include <Arduino.h>
+#if ORIGINAL_LIB
 #include "DFRobot_RGBMatrix.h"
+#define PIN_OUTPUT_ENABLED 9
+#define PIN_LATCH 10
+#define PIN_CLOCK 11
+#define PIN_LA    A0
+#define PIN_LB    A1
+#define PIN_LC    A2
+#define PIN_LD    A3
+#define PIN_LE    A4
+#else
+#include "led_matrix.h"
+#endif
 
 
 #define BUTTON_LEFT  1
@@ -39,22 +55,20 @@
 #define BUTTON_START 5
 #define BUTTON_MENU  6
 
-#define PIN_OUTPUT_ENABLED 9
-#define PIN_LATCH 10
-#define PIN_CLOCK 11
-#define PIN_LA   	A0
-#define PIN_LB   	A1
-#define PIN_LC   	A2
-#define PIN_LD   	A3
-#define PIN_LE   	A4
-#define WIDTH     64
-#define _HIGH	    64
 
 namespace Utils {
-  static DFRobot_RGBMatrix matrix(PIN_LA, PIN_LB, PIN_LC, PIN_LD, PIN_LE, PIN_CLOCK, PIN_LATCH, PIN_OUTPUT_ENABLED, false, WIDTH, _HIGH);
+
+#ifdef ORIGINAL_LIB
+  static DFRobot_RGBMatrix LedMatrix(PIN_LA, PIN_LB, PIN_LC, PIN_LD, PIN_LE, PIN_CLOCK, PIN_LATCH, PIN_OUTPUT_ENABLED, false, 64, 64);
 
   static void Init() {
-    matrix.begin();
+    LedMatrix.begin();
+#else
+  static void Init() {
+    LedMatrix::Init();
+
+#endif
+
     pinMode(BUTTON_LEFT,  INPUT);
     pinMode(BUTTON_DOWN,  INPUT);
     pinMode(BUTTON_RIGHT, INPUT);
@@ -63,16 +77,26 @@ namespace Utils {
     pinMode(BUTTON_MENU,  INPUT);
   }
 
-  static void DrawPixel(int8_t x, int8_t y, uint16_t color) {
-    matrix.drawPixel(x, y, color);
+  static void DrawPixel(int8_t x, int8_t y, uint8_t color) {
+#ifdef ORIGINAL_LIB
+	  // convert RGBrgb to format library uses
+	  uint16_t encoded = LedMatrix.Color333((color >> 4) & 3, (color >> 2) & 3, color & 3);
+	  LedMatrix.drawPixel(x, y, encoded);
+#else
+    LedMatrix::DrawPixel(x, y, color);
+#endif
   }
 
-  static void FillRect(int8_t x, int8_t y, int8_t width, int8_t height, int16_t color) {
+  static void FillRect(int8_t x, int8_t y, int8_t width, int8_t height, int8_t color) {
     for (int8_t i = 0; i < width; i++) {
       for (int8_t j = 0; j < height; j++) {
-        matrix.drawPixel(x + i, y + j, color);
+	      Utils::DrawPixel(x + i, y + j, color);
       }
     }
+  }
+
+  static void SwapPixels(int8_t x1, int8_t y1, int8_t x2, int8_t y2) {
+    // TODO!
   }
 }
 
@@ -106,10 +130,7 @@ namespace Utils {
             if (line & 0x1) {
               Utils::DrawPixel(cursor_x+j, cursor_y+k, color);
             }
-            // for now, no background color
-            // else if (bg != color) {
-            //   Utils::DrawPixel(cursor_x+j, cursor_y+k, bg);
-            // }
+            // no background color is needed, it will be handeld by drawing a rect in the code of the game
             line >>= 1;
           }
         }

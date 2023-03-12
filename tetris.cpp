@@ -412,10 +412,12 @@ namespace Tetris {
           // move pixels over
           for (int8_t k = 2; k >= 0; k--) {
             for (int8_t l = 0; l < 30; l++) {
-              Utils::swapPixels(2+l, 2+j*3 + k, 2+l, 2 + (j-1)*3 + k);
+              Utils::SwapPixels(2+l, 2+j*3 + k, 2+l, 2 + (j-1)*3 + k);
             }
           }
+#ifndef ARDUINO
           Utils::writeBuffer();
+#endif
 
           // move over in memory
           for (uint8_t k = 0; k < 10; k++) {

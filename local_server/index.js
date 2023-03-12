@@ -4,7 +4,37 @@ const fs = require('fs');
 
 const view_html = fs.readFileSync('./local_server/view.html');
 
+function getImage() {
+    let output = fs.openSync('./output.txt', 'a+');
+    let contents = fs.readFileSync(output).toString();
+    fs.closeSync(output);
+    return contents;
+}
+
+function writeButtons(buttons) {
+    fs.writeFileSync('./input.txt', buttons);
+}
+
 var httpServer = http.createServer(function(request, response) {
+    if (request.url.startsWith("/image/")) {
+        // from stormworks
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.end([...getImage()].map( char => char.charCodeAt(0)).join(' '));
+        // response.end(getImage());
+        let data = request.url.substring(7) * 1;
+        let result = ''
+        for (let i = 0; i < 6; i++) {
+            if ((data&(1<<i)) == 0) {
+                result += '0';
+            } else {
+                result += '1';
+            }
+        }
+
+        writeButtons(result);
+        return;
+    }
+
     response.writeHead(200, {'Content-Type': 'text/html'});
     response.end(view_html);
 });
@@ -21,7 +51,7 @@ wsServer.on('request', (request) => {
     current_connection = connection;
 
     connection.on('message', function(message) {
-        fs.writeFileSync('./input.txt', message.utf8Data);
+        writeButtons(message.utf8Data);
     });
     
     connection.on('close', function(reasonCode, description) {
@@ -36,9 +66,5 @@ setInterval(() => {
         return;
     }
 
-    let output = fs.openSync('./output.txt', 'a+');
-    let contents = fs.readFileSync(output).toString();
-    fs.closeSync(output);
-
-    current_connection.send(contents);
+    current_connection.send(getImage());
 }, 50);

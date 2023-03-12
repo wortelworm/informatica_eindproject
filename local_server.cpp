@@ -67,7 +67,7 @@ namespace Utils {
     Utils::Delay(width * height / 20);
   }
 
-  static void swapPixels(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
+  static void SwapPixels(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {
     uint8_t temp = buffer[x1 + y1*64];
     buffer[x1 + y1*64] = buffer[x2 + y2*64];
     buffer[x2 + y2*64] = temp;
