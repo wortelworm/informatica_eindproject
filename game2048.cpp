@@ -363,6 +363,13 @@ namespace Game2048 {
     gameOver = false;
     win = false;
 
+    // used for debugging, removed
+    // for (int i = 0; i < 12; i++) {
+    //   field[i] = i;
+    //   drawTile(i % 4, i / 4);
+    // }
+    // delay(1000 * 60 * 5);
+
     while (! gameOver) {
       spawnNextBlock();
       waitDoMovement();

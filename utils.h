@@ -30,6 +30,7 @@
 #ifndef ARDUINO
 // this is local testing
 #include "local_server.cpp"
+
 #else
 // arduino
 #include <Arduino.h>
@@ -96,7 +97,12 @@ namespace Utils {
   }
 
   static void SwapPixels(int8_t x1, int8_t y1, int8_t x2, int8_t y2) {
-    // TODO!
+#ifdef ORIGINAL_LIB
+	// The original library does not support swapping of pixels
+	// so tetris will look very weird
+#else
+	LedMatrix::SwapPixels(x1, y1, x2, y2);
+#endif
   }
 }
 

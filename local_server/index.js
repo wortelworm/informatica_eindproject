@@ -2,8 +2,6 @@ const WebSocketServer = require('websocket').server
 const http = require('http');
 const fs = require('fs');
 
-const view_html = fs.readFileSync('./local_server/view.html');
-
 function getImage() {
     let output = fs.openSync('./output.txt', 'a+');
     let contents = fs.readFileSync(output).toString();
@@ -36,7 +34,7 @@ var httpServer = http.createServer(function(request, response) {
     }
 
     response.writeHead(200, {'Content-Type': 'text/html'});
-    response.end(view_html);
+    response.end(fs.readFileSync('./local_server/view.html'));
 });
 
 const wsServer = new WebSocketServer({httpServer: httpServer, autoAcceptConnections: false});

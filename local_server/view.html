@@ -27,9 +27,9 @@
                     
                     for (let i = 0; i < 4096; i++) {
                         let color = e.data.charCodeAt(i);
-                        let r = (color >> 4) & 3;
-                        let g = (color >> 2) & 3;
-                        let b = (color >> 0) & 3;
+                        let r = ((color & (1 << 2)) ? 1 : 0) + ((color & (1 << 5)) ? 2 : 0);
+                        let g = ((color & (1 << 1)) ? 1 : 0) + ((color & (1 << 4)) ? 2 : 0);
+                        let b = ((color & (1 << 0)) ? 1 : 0) + ((color & (1 << 3)) ? 2 : 0);
 
                         setColor(i, `rgb(${r*85}, ${g*85}, ${b*85})`);
                     }

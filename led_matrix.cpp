@@ -121,7 +121,7 @@ namespace LedMatrix {
 
   }
   void DrawPixel(int8_t x, int8_t y, uint8_t color) {
-    uint8_t r, g, b, bit, limit, *ptr;
+    uint8_t *ptr;
   
     if ((x < 0) || (x >= 64) || (y < 0) || (y >= 64)) {
       return;
@@ -136,26 +136,60 @@ namespace LedMatrix {
       // data for upper half of the display is stored in the lower bits
       // set the lower bitplane
       *ptr &= ~B00011100;
-      *ptr |= (color & 3) << 2;
+      *ptr |= (color & 7) << 2;
 
       // advance to the higher bitplane
       ptr += 64;
       
       *ptr &= ~B00011100;
-      *ptr |= ((color >> 3) & 3) << 2;
+      *ptr |= ((color >> 3) & 7) << 2;
     } else {
       // data for lower half of the display is stored in the upper bits
       // set the lower bitplane
       *ptr &= ~B11100000;
-      *ptr |= (color & 3) << 5;
+      *ptr |= (color & 7) << 5;
 
       // advance to the higher bitplane
       ptr += 64;
       
       *ptr &= ~B11100000;
-      *ptr |= ((color >> 3) & 3) << 5;
+      *ptr |= ((color >> 3) & 7) << 5;
       
     }
+  }
+  uint8_t getPixelColor(int8_t x, int8_t y) {
+    uint8_t *ptr = &matrix_buffer[(y % 32) * 64 * 2 + x]; // Base addr
+    uint8_t color = 0;
+    if (y < 32) {
+      // data for the upper half is stored in the lower bits
+      // get the lower bitplane
+      color |= ((*ptr) & B00011100) >> 2;
+      
+      // advance to the higher bitplane
+      ptr += 64;
+      
+      // get the upper bitplane
+      color |= ((*ptr) & B00011100) << 1;
+    } else {
+      // data for lower half of the display is stored in the upper bits
+      // get the lower bitplane
+      color |= ((*ptr) & B11100000) >> 5;
+      
+      // advance to the higher bitplane
+      ptr += 64;
+      
+      // get the upper bitplane
+      color |= ((*ptr) & B11100000) >> 2;
+    }
+    
+    return color;
+  }
+  void SwapPixels(int8_t x1, int8_t y1, int8_t x2, int8_t y2) {
+
+	  uint8_t original_color = getPixelColor(x1, y1);
+    DrawPixel(x1, y1, getPixelColor(x2, y2));
+    DrawPixel(x2, y2, original_color);
+
   }
 }
 
