@@ -12,6 +12,7 @@ namespace Game2048 {
   bool gameOver;
   uint32_t score;
   bool win;
+  bool stoppedByButton;
 
   void drawTile(uint8_t x, uint8_t y) {
     Utils::FillRect(x*16 + 1, y*16 + 1, 14, 14, BLACK);
@@ -83,8 +84,7 @@ namespace Game2048 {
     // 90%: 2 = 2**1
     // 10%: 4 = 2**2
     uint8_t number = (random(1, 10 +1) == 10) ? 2 : 1;
-
-    // TODO?: better algorithm
+    
     bool good = false;
     uint8_t pos;
     while (! good) {
@@ -144,6 +144,7 @@ namespace Game2048 {
       if (digitalRead(BUTTON_MENU)) {
         // suicide :(
         gameOver = true;
+        stoppedByButton = true;
         return;
       }
 
@@ -362,20 +363,16 @@ namespace Game2048 {
     score = 0;
     gameOver = false;
     win = false;
-
-    // used for debugging, removed
-    // for (int i = 0; i < 12; i++) {
-    //   field[i] = i;
-    //   drawTile(i % 4, i / 4);
-    // }
-    // delay(1000 * 60 * 5);
+    stoppedByButton = false;
 
     while (! gameOver) {
       spawnNextBlock();
       waitDoMovement();
     }
 
-    delay(5000);
+    if (! stoppedByButton) {
+      delay(2000);
+    }
 
     // gameover or win screen
     for (int i = 0; i < 56; i++) {
@@ -416,7 +413,10 @@ namespace Game2048 {
     }
     Utils::DrawText(12 + 3*(7 - numberOfDigits), 37, win ? GREEN : RED, buffer);
 
-    // wait until start or menu button is pressed
+    // wait until start or menu button is unpressed and pressed
+    while (digitalRead(BUTTON_START) || digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
     while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {
       delay(10);
     }

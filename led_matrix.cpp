@@ -273,7 +273,7 @@ void updateDisplay(void)
   // vertical scanning artifacts, in practice with this panel it causes
   // a green 'ghosting' effect on black pixels, a much worse artifact.
 
-  if(++plane >= 2) {            // Advance plane counter.  Maxed out?
+  if(++plane >= 3) {            // Advance plane counter.  Maxed out?
     plane = 0;                  // Yes, reset to plane 0, and
     if(++row >= 32) {           // advance row counter.  Maxed out?
       row     = 0;              // Yes, reset row counter, then...
@@ -296,7 +296,8 @@ void updateDisplay(void)
 
   // buffer, being 'volatile' type, doesn't take well to optimization.
   // A local register copy can speed some things up:
-  ptr = (uint8_t *)matrix_buffer;
+  // ptr = (uint8_t *)buffer_ptr;
+  ptr = & (matrix_buffer[row * 128 + plane * 64]);
 
   ICR1      = duration; // Set interval for next interrupt
   TCNT1     = 0;        // Restart interrupt timer
@@ -345,7 +346,7 @@ void updateDisplay(void)
   pew pew pew pew  pew pew pew pew
   pew pew pew pew  pew pew pew pew
 
-  buffer_ptr = ptr; //+= 32;
+  buffer_ptr = ptr;
 }
 
 

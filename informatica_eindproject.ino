@@ -4,15 +4,6 @@
 #include "simon.h"
 #include "utils.h"
 
-/**
- * This file contains the code to simulates a snake
- * game on a 15x15 board displayed on a 64x64 led matrix 
- * 
- * TODOS:
- *    library optimization/specification
- * 
- */
-
 void setup() {
 #ifdef ARDUINO
   // attempt to randomize
@@ -38,7 +29,6 @@ void drawMenuBasis() {
     Utils::DrawPixel(60 - i, 31 + i, WHITE);
     Utils::DrawPixel(60 - i, 31 - i, WHITE);
   }
-
 }
 
 int8_t game = 0;
@@ -73,7 +63,7 @@ bool readButtons() {
   bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
-    if (game > 3) {
+    if (game > 2) {
       game = 0;
     }
     updateMenu = true;
@@ -81,7 +71,7 @@ bool readButtons() {
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
-      game = 3;
+      game = 2;
     }
     updateMenu = true;
   }

@@ -514,7 +514,7 @@ namespace Tetris {
           if (returnToMenu) {
             return;
           }
-          delay(5);
+          delay(25);
           if (speedupFlag) {
             i += 10;
             subScore += 1;

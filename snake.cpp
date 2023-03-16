@@ -229,8 +229,7 @@ namespace Snake {
     while (! gameOver) {
       Snake::move(true);
 
-      // maybe TODO this as a interrupt
-      for (char i = 0; i < 10; i++) {
+      for (char i = 0; i < 30; i++) {
         Snake::readDirection();
 
         delay(10);
@@ -265,9 +264,13 @@ namespace Snake {
     itoa(snakeLength - 3, buffer, 10);
     Utils::DrawText(41, 33, RED, buffer);
 
+    delay(1000);
 
-    // wait until start or menu button is pressed
+    // wait until start or menu button is pressed and unpressed
     while (! digitalRead(BUTTON_START) && ! digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
+    while (digitalRead(BUTTON_START) || digitalRead(BUTTON_MENU)) {
       delay(10);
     }
   }

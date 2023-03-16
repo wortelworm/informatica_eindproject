@@ -7,25 +7,25 @@
  */
 
 // colors used both in local testing as in arduino
-// Format: RGBrgb, used to be RrGgBb
+// Format: GBRbgr, used to be RrGgBb
 // first the upper bits for all colors, then the lower bits for all colors
 #define BLACK    0    // 000000 -> 000000
 #define WHITE   63    // 111111 -> 111111
 #define GREY     7    // 010101 -> 000111
 
-#define RED     36    // 110000 -> 100100
-#define GREEN   18    // 001100 -> 010010
-#define BLUE     9    // 000011 -> 001001
+#define GREEN   36    // 110000 -> 100100
+#define BLUE    18    // 001100 -> 010010
+#define RED      9    // 000011 -> 001001
 
-#define CYAN    27    // 001111 -> 011011
+#define YELLOW  27    // 001111 -> 011011
 #define MAGENTA 45    // 110011 -> 101101
-#define YELLOW  54    // 111100 -> 110110
+#define CYAN    54    // 111100 -> 110110
 
-#define PURPLE   5    // 010001 -> 000101
-#define ORANGE  38    // 110100 -> 100110
+#define PURPLE   3    // 010001 -> 000011
+#define ORANGE  11    // 110100 -> 001011
 
 // the original DFRobot_RGBMatrix library is used right now
-#define ORIGINAL_LIB true
+//#define ORIGINAL_LIB true
 
 #ifndef ARDUINO
 // this is local testing
@@ -49,12 +49,12 @@
 #endif
 
 
-#define BUTTON_LEFT  1
-#define BUTTON_DOWN  2
-#define BUTTON_RIGHT 3
-#define BUTTON_UP    4
-#define BUTTON_START 5
-#define BUTTON_MENU  6
+#define BUTTON_LEFT  42
+#define BUTTON_DOWN  41
+#define BUTTON_RIGHT 43
+#define BUTTON_UP    40
+#define BUTTON_START 38
+#define BUTTON_MENU  39
 
 
 namespace Utils {
