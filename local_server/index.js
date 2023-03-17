@@ -13,7 +13,6 @@ function getTone() {
     let tone_output = fs.openSync('./tone_output.txt', 'a+');
     let contents = fs.readFileSync(tone_output).toString();
     fs.closeSync(tone_output);
-    console.log(contents);
     return contents;
 }
 
