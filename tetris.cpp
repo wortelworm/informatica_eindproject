@@ -495,7 +495,7 @@ namespace Tetris {
     Utils::DrawText(34, 28, RED, "Score");
     Utils::DrawText(58, 39, RED, "0");
 
-
+    returnToMenu = false;
     bagPointer = 7;
     fallingPiece = { 0, 0, 0, RotationType::normal };
     previewPiece = { 0, 0, 0, RotationType::normal };

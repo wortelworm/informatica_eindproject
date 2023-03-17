@@ -63,7 +63,7 @@ bool readButtons() {
   bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
-    if (game > 2) {
+    if (game > 3) {
       game = 0;
     }
     updateMenu = true;
@@ -71,7 +71,7 @@ bool readButtons() {
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
-      game = 2;
+      game = 3;
     }
     updateMenu = true;
   }

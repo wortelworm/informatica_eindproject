@@ -2,8 +2,10 @@
 <html>
     <head>
         <script>
+            const colors = ['BLACK', 'WHITE', 'GREY', 'RED', 'LIME', 'BLUE', 'CYAN', 'MAGENTA', 'YELLOW', 'PURPLE', 'ORANGE'];
             let table;
             function load() {
+                // setup table to display frame
                 table = document.getElementById('table')
                 for (let i = 0; i < 64; i++) {
                     const row = document.createElement('tr');
@@ -14,27 +16,36 @@
                     row.className = i;
                     table.appendChild(row);
                 }
+                
+                // setup playing audio tones
+                setTimeout(() => {
+                    // the delay is to prevent the browser
+                    // from blocking, see https://goo.gl/7K7WLu
+                    let context = new AudioContext();
+                    window.oscillator = context.createOscillator();
+                    let gain = context.createGain();
+                    oscillator.connect(gain);
+                    gain.connect(context.destination);
+                    gain.gain = 1.0;
+                    oscillator.frequency.value = 0;
+                    oscillator.start(0);
+                }, 5000);
 
-                // set up connection to backend
+                // setup connection to backend
                 let sock = new WebSocket("ws://localhost");
 		        sock.onmessage = ( e ) => {
-                    // e.data.split('\n').forEach(row => {
-                    //     if (row.trim() == '') {
-                    //         return;
-                    //     }
-                    //     let location = row.split(' ')[0] * 1;
-                    //     let color = row.split(' ')[1] * 1;
-                    
-                    for (let i = 0; i < 4096; i++) {
-                        let color = e.data.charCodeAt(i);
-                        let r = ((color & (1 << 2)) ? 1 : 0) + ((color & (1 << 5)) ? 2 : 0);
-                        let g = ((color & (1 << 1)) ? 1 : 0) + ((color & (1 << 4)) ? 2 : 0);
-                        let b = ((color & (1 << 0)) ? 1 : 0) + ((color & (1 << 3)) ? 2 : 0);
-
-                        setColor(i, `rgb(${r*85}, ${g*85}, ${b*85})`);
+                    if (e.data.length < 100) {
+                        // this is a tone
+                        oscillator.frequency.value = e.data * 1;
+                    } else {
+                        // this is a raw frame
+                        for (let i = 0; i < 4096; i++) {
+                            let color = e.data.charCodeAt(i);
+                            setColor(i, colors[color]);
+                        }
                     }
-                    // );
                 }
+                // setup keybindings to send to the backend
                 const keybindings = {
                     'a': 1,
                     's': 2,

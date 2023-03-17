@@ -8,10 +8,25 @@
 #ifndef _LOCAL_SERVER_CPP
 #define _LOCAL_SERVER_CPP
 
-
 #include <stdint.h>
 #include <fstream>
 #include <synchapi.h>
+
+// for local use colors are defined like an enum
+#define BLACK    0
+#define WHITE    1
+#define GREY     2
+
+#define RED      3
+#define GREEN    4 
+#define BLUE     5
+
+#define CYAN     6
+#define MAGENTA  7
+#define YELLOW   8
+
+#define PURPLE   9
+#define ORANGE  10
 
 
 std::ifstream input_file;
@@ -48,6 +63,18 @@ namespace Utils {
     Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
     Utils::output_file.seekp((x + y * 64), std::ios::beg);
     Utils::output_file.put(color);
+    Utils::output_file.close();
+  }
+
+  static void PlayTone(uint16_t frequency, uint16_t duration) {
+    Utils::output_file.open("tone_output.txt", std::ios::trunc | std::ios::out | std::ios::in);
+    Utils::output_file << frequency;
+    Utils::output_file.close();
+
+    Utils::Delay(duration);
+
+    Utils::output_file.open("tone_output.txt", std::ios::trunc | std::ios::out | std::ios::in);
+    Utils::output_file << 0;
     Utils::output_file.close();
   }
 

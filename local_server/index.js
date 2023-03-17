@@ -9,6 +9,14 @@ function getImage() {
     return contents;
 }
 
+function getTone() {
+    let tone_output = fs.openSync('./tone_output.txt', 'a+');
+    let contents = fs.readFileSync(tone_output).toString();
+    fs.closeSync(tone_output);
+    console.log(contents);
+    return contents;
+}
+
 function writeButtons(buttons) {
     fs.writeFileSync('./input.txt', buttons);
 }
@@ -59,10 +67,24 @@ wsServer.on('request', (request) => {
 });
 httpServer.listen(80, ()=> console.log('Online!'));
 
+let imageBuffer;
+let prevTone = 0;
+
 setInterval(() => {
     if (current_connection == null) {
         return;
     }
 
-    current_connection.send(getImage());
+    let newImage = getImage();
+    if (newImage != imageBuffer) {
+        imageBuffer = newImage;
+        current_connection.send(newImage);
+    }
+
+    let newTone = getTone();
+    if (prevTone != newTone) {
+        prevTone = newTone;
+        current_connection.send(newTone);
+    }
+
 }, 50);

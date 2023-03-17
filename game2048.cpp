@@ -14,57 +14,217 @@ namespace Game2048 {
   bool win;
   bool stoppedByButton;
 
-  void drawTile(uint8_t x, uint8_t y) {
-    Utils::FillRect(x*16 + 1, y*16 + 1, 14, 14, BLACK);
-    switch (field[y * 4 + x]) {
+  void drawTile(uint8_t xField, uint8_t yField) {
+    uint8_t x = xField*16, y = yField*16;
+    Utils::FillRect(x + 1, y + 1, 14, 14, BLACK);
+    switch (field[yField * 4 + xField]) {
       case 0:
         break;
       case 1:
-        Utils::DrawText(x*16 + 5, y * 16 + 5, RED, "2");
+        Utils::DrawText(x + 5, y + 5, RED, "2");
         break;
       case 2:
-        Utils::DrawText(x*16 + 5, y * 16 + 5, RED, "4");
+        Utils::DrawText(x + 5, y + 5, RED, "4");
         break;
       case 3:
-        Utils::DrawText(x*16 + 5, y * 16 + 5, RED, "8");
+        Utils::DrawText(x + 5, y + 5, RED, "8");
         break;
 
       case 4:
-        Utils::DrawText(x*16 + 2, y * 16 + 5, RED, "16");
+        Utils::DrawText(x + 2, y + 5, RED, "16");
         break;
       case 5:
-        Utils::DrawText(x*16 + 2, y * 16 + 5, RED, "32");
+        Utils::DrawText(x + 2, y + 5, RED, "32");
         break;
       case 6:
-        Utils::DrawText(x*16 + 2, y * 16 + 5, RED, "64");
+        Utils::DrawText(x + 2, y + 5, RED, "64");
         break;
 
       case 7:
-        Utils::DrawText(x*16 + 5, y * 16 + 1, RED,  "1");
-        Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "28");
+        // From here on out the default font wont fit
+        // so a smaller, custom one is used
+        // this thing has an offset of (2, 5)
+        // . # . # # # # . # # # #
+        // # # . . . . # . # . . #
+        // . # . . . . # . # . . #
+        // . # . # # # # . # # # #
+        // . # . # . . . . # . . #
+        // . # . # . . . . # . . #
+        // . # . # # # # . # # # #
+
+        // 1
+        Utils::DrawPixel(x+2, y+6, BLUE);
+        Utils::DrawLineVertical(x+3, y+5, 7, BLUE);
+
+        // 2
+        Utils::DrawLineHorizontal(x+5, y+5, 4, BLUE);
+        Utils::DrawLineHorizontal(x+5, y+8, 4, BLUE);
+        Utils::DrawLineHorizontal(x+5, y+11, 4, BLUE);
+        Utils::DrawLineVertical(x+5, y+9, 2, BLUE);
+        Utils::DrawLineVertical(x+8, y+6, 2, BLUE);
+
+        // 8
+        Utils::DrawLineVertical(x+10, y+5, 7, BLUE);
+        Utils::DrawLineVertical(x+13, y+5, 7, BLUE);
+        Utils::DrawLineHorizontal(x+11, y+5, 2, BLUE);
+        Utils::DrawLineHorizontal(x+11, y+8, 2, BLUE);
+        Utils::DrawLineHorizontal(x+11, y+11, 2, BLUE);
+
+        // Utils::DrawText(x*16 + 5, y * 16 + 1, RED,  "1");
+        // Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "28");
         break;
       case 8:
-        Utils::DrawText(x*16 + 5, y * 16 + 1, RED,  "2");
-        Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "56");
+        // this thing has an offset of (3, 5)
+        // # # # . # # # . # # #
+        // . . # . # . . . # . .
+        // . . # . # . . . # . .
+        // # # # . # # # . # # #
+        // # . . . . . # . # . #
+        // # . . . . . # . # . #
+        // # # # . # # # . # # #
+
+        // 2
+        Utils::DrawLineHorizontal(x+3, y+5, 3, BLUE);
+        Utils::DrawLineHorizontal(x+3, y+8, 3, BLUE);
+        Utils::DrawLineHorizontal(x+3, y+11, 3, BLUE);
+        Utils::DrawLineVertical(x+3, y+9, 2, BLUE);
+        Utils::DrawLineVertical(x+5, y+6, 2, BLUE);
+
+        // 5
+        Utils::DrawLineHorizontal(x+7, y+5, 3, BLUE);
+        Utils::DrawLineHorizontal(x+7, y+8, 3, BLUE);
+        Utils::DrawLineHorizontal(x+7, y+11, 3, BLUE);
+        Utils::DrawLineVertical(x+7, y+6, 2, BLUE);
+        Utils::DrawLineVertical(x+9, y+9, 2, BLUE);
+
+        // 6
+        Utils::DrawLineHorizontal(x+12, y+5, 2, BLUE);
+        Utils::DrawLineHorizontal(x+12, y+8, 2, BLUE);
+        Utils::DrawLineHorizontal(x+12, y+11, 2, BLUE);
+        Utils::DrawLineVertical(x+11, y+5, 7, BLUE);
+        Utils::DrawLineVertical(x+13, y+9, 2, BLUE);
+
+        // Utils::DrawText(x + 5, y + 1, RED,  "2");
+        // Utils::DrawText(x + 2, y + 8, RED, "56");
         break;
       case 9:
-        Utils::DrawText(x*16 + 5, y * 16 + 1, RED,  "5");
-        Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "12");
+        // this thing has an offset of (3, 5)
+        // # # # . . # . . # # #
+        // # . . . # # . . . . #
+        // # . . . . # . . . . #
+        // # # # . . # . . # # #
+        // . . # . . # . . # . .
+        // . . # . . # . . # . .
+        // # # # . # # # . # # #
+
+        // 5
+        Utils::DrawLineHorizontal(x+3, y+5, 3, BLUE);
+        Utils::DrawLineHorizontal(x+3, y+8, 3, BLUE);
+        Utils::DrawLineHorizontal(x+3, y+11, 3, BLUE);
+        Utils::DrawLineVertical(x+3, y+6, 2, BLUE);
+        Utils::DrawLineVertical(x+5, y+9, 2, BLUE);
+
+        // 1
+        Utils::DrawPixel(x+7, y+6, BLUE);
+        Utils::DrawLineVertical(x+8, y+5, 6, BLUE);
+        Utils::DrawLineHorizontal(x+7, y+11, 3, BLUE);
+
+        // 2
+        Utils::DrawLineHorizontal(x+11, y+5, 3, BLUE);
+        Utils::DrawLineHorizontal(x+11, y+8, 3, BLUE);
+        Utils::DrawLineHorizontal(x+11, y+11, 3, BLUE);
+        Utils::DrawLineVertical(x+11, y+9, 2, BLUE);
+        Utils::DrawLineVertical(x+13, y+6, 2, BLUE);
+
+        // Utils::DrawText(x + 5, y + 1, RED,  "5");
+        // Utils::DrawText(x + 2, y + 8, RED, "12");
         break;
 
       case 10:
-        Utils::DrawText(x*16 + 2, y * 16 + 1, RED, "10");
-        Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "24");
+        // this thing has an offset of (1, 5)
+        // . # . # # # . # # # . # . #
+        // # # . # . # . . . # . # . #
+        // . # . # . # . . . # . # . #
+        // . # . # . # . # # # . # # #
+        // . # . # . # . # . . . . . #
+        // . # . # . # . # . . . . . #
+        // . # . # # # . # # # . . . #
+
+        // 1
+        Utils::DrawPixel(x+1, y+6, BLUE);
+        Utils::DrawLineVertical(x+2, y+5, 7, BLUE);
+
+        // 0
+        Utils::DrawLineVertical(x+4, y+5, 7, BLUE);
+        Utils::DrawLineVertical(x+6, y+5, 7, BLUE);
+        Utils::DrawPixel(x+5, y+5, BLUE);
+        Utils::DrawPixel(x+5, y+11, BLUE);
+
+        // 2
+        Utils::DrawLineHorizontal(x+8, y+5, 3, BLUE);
+        Utils::DrawLineHorizontal(x+8, y+8, 3, BLUE);
+        Utils::DrawLineHorizontal(x+8, y+11, 3, BLUE);
+        Utils::DrawLineVertical(x+8, y+9, 2, BLUE);
+        Utils::DrawLineVertical(x+10, y+6, 2, BLUE);
+
+        // 4
+        Utils::DrawLineVertical(x+12, y+5, 4, BLUE);
+        Utils::DrawLineVertical(x+14, y+5, 7, BLUE);
+        Utils::DrawPixel(x+13, y+8, BLUE);
+
+
+        // Utils::DrawText(x + 2, y + 1, RED, "10");
+        // Utils::DrawText(x + 2, y + 8, RED, "24");
         break;
       case 11:
-        Utils::DrawText(x*16 + 2, y * 16 + 1, RED, "20");
-        Utils::DrawText(x*16 + 2, y * 16 + 8, RED, "48");
+        // this thing has an offset of (3, 2)
+        // # # # # . . # # # #
+        // . . . # . . # . . #
+        // # # # # . . # . . #
+        // # . . . . . # . . #
+        // # # # # . . # # # #
+        // . . . . . . . . . .
+        // . . . . . . . . . .
+        // # . . # . . # # # #
+        // # . . # . . # . . #
+        // # # # # . . # # # #
+        // . . . # . . # . . #
+        // . . . # . . # # # #
+
+        // 2
+        Utils::DrawLineHorizontal(x+3, y+2, 4, YELLOW);
+        Utils::DrawLineHorizontal(x+3, y+4, 4, YELLOW);
+        Utils::DrawLineHorizontal(x+3, y+6, 4, YELLOW);
+        Utils::DrawPixel(x+6, y+3, YELLOW);
+        Utils::DrawPixel(x+3, y+5, YELLOW);
+
+        // 0
+        Utils::DrawLineHorizontal(x+9, y+2, 4, YELLOW);
+        Utils::DrawLineHorizontal(x+9, y+6, 4, YELLOW);
+        Utils::DrawLineVertical(x+9, y+3, 3, YELLOW);
+        Utils::DrawLineVertical(x+12, y+3, 3, YELLOW);
+
+        // 4
+        Utils::DrawLineVertical(x+3, y+9, 3, YELLOW);
+        Utils::DrawLineVertical(x+6, y+9, 5, YELLOW);
+        Utils::DrawLineHorizontal(x+4, y+11, 2, YELLOW);
+
+        // 8
+        Utils::DrawLineVertical(x+9, y+9, 5, YELLOW);
+        Utils::DrawLineVertical(x+12, y+9, 5, YELLOW);
+        Utils::DrawLineHorizontal(x+10, y+9, 2, YELLOW);
+        Utils::DrawLineHorizontal(x+10, y+11, 2, YELLOW);
+        Utils::DrawLineHorizontal(x+10, y+13, 2, YELLOW);
+        
+
+        // Utils::DrawText(x + 2, y + 1, RED, "20");
+        // Utils::DrawText(x + 2, y + 8, RED, "48");
         gameOver = true;
         win = true;
         break;
       
       default:
-        Utils::DrawText(x*16 + 5, y * 16 + 5, RED, "?");
+        Utils::DrawText(x + 5, y + 5, RED, "?");
         break;
     }
   }
@@ -84,6 +244,8 @@ namespace Game2048 {
     // 90%: 2 = 2**1
     // 10%: 4 = 2**2
     uint8_t number = (random(1, 10 +1) == 10) ? 2 : 1;
+    // Cheat for testing the game
+    // number = 6;
     
     bool good = false;
     uint8_t pos;
@@ -364,6 +526,14 @@ namespace Game2048 {
     gameOver = false;
     win = false;
     stoppedByButton = false;
+
+    // for debug purposes only
+    // for (int i = 0; i < 16; i++) {
+    //   field[i] = i;
+    //   drawTile(i % 4, i / 4);
+    // }
+
+    // delay(1000 * 60 * 5);
 
     while (! gameOver) {
       spawnNextBlock();

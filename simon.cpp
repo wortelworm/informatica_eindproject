@@ -20,26 +20,35 @@ namespace Simon {
     uint8_t x;
     uint8_t y;
     uint8_t color;
+    uint16_t tone;
     switch (id & 3) {
       case 0:
         x = 10;
         y = 22;
         color = GREEN;
+        // G5
+        tone = 784;
         break;
       case 1:
         x = 22;
         y =  10;
         color = YELLOW;
+        // C5
+        tone = 523;
         break;
       case 2:
         x = 34;
         y = 22;
         color = BLUE;
+        // G4
+        tone = 392;
         break;
       case 3:
         x = 22;
         y = 34;
         color = RED;
+        // E5
+        tone = 659;
         break;
     }
 
@@ -56,7 +65,8 @@ namespace Simon {
       Utils::DrawPixel(x + 9 + j, y - 9 + j, color);
     }
 
-    delay(500);
+    // play tone while lit up
+    Utils::PlayTone(tone, 700);
 
     // fill a rotated square dimmed
     for (uint8_t i = 0; i < 10-1; i++) {
@@ -75,7 +85,6 @@ namespace Simon {
     }
 
     delay(200);
-
   }
 
 
@@ -107,6 +116,20 @@ namespace Simon {
     showLight(3);
 
     delay(1000);
+
+    // for debug purposes only
+    while (true) {
+      uint8_t id = random(0, 4);
+      showLight(id);
+
+      if (digitalRead(BUTTON_MENU)) {
+        // wait until unpressed
+        while (digitalRead(BUTTON_MENU)) {
+          delay(10);
+        }
+        return;
+      }
+    }
 
     // create random sequence
     sequence = 0;

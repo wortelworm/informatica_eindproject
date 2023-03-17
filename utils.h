@@ -6,7 +6,16 @@
  * 
  */
 
-// colors used both in local testing as in arduino
+#ifndef ARDUINO
+// this is local testing
+#include "local_server.cpp"
+
+#else
+// arduino
+#include <Arduino.h>
+#include "led_matrix.h"
+
+// colors used both by the arduino
 // Format: GBRbgr, used to be RrGgBb
 // first the upper bits for all colors, then the lower bits for all colors
 #define BLACK    0    // 000000 -> 000000
@@ -24,30 +33,6 @@
 #define PURPLE   3    // 010001 -> 000011
 #define ORANGE  11    // 110100 -> 001011
 
-// the original DFRobot_RGBMatrix library is used right now
-//#define ORIGINAL_LIB true
-
-#ifndef ARDUINO
-// this is local testing
-#include "local_server.cpp"
-
-#else
-// arduino
-#include <Arduino.h>
-#if ORIGINAL_LIB
-#include "DFRobot_RGBMatrix.h"
-#define PIN_OUTPUT_ENABLED 9
-#define PIN_LATCH 10
-#define PIN_CLOCK 11
-#define PIN_LA    A0
-#define PIN_LB    A1
-#define PIN_LC    A2
-#define PIN_LD    A3
-#define PIN_LE    A4
-#else
-#include "led_matrix.h"
-#endif
-
 
 #define BUTTON_LEFT  42
 #define BUTTON_DOWN  41
@@ -56,19 +41,12 @@
 #define BUTTON_START 38
 #define BUTTON_MENU  39
 
+#define BUZZER 12
+
 
 namespace Utils {
-
-#ifdef ORIGINAL_LIB
-  static DFRobot_RGBMatrix LedMatrix(PIN_LA, PIN_LB, PIN_LC, PIN_LD, PIN_LE, PIN_CLOCK, PIN_LATCH, PIN_OUTPUT_ENABLED, false, 64, 64);
-
-  static void Init() {
-    LedMatrix.begin();
-#else
   static void Init() {
     LedMatrix::Init();
-
-#endif
 
     pinMode(BUTTON_LEFT,  INPUT);
     pinMode(BUTTON_DOWN,  INPUT);
@@ -79,13 +57,7 @@ namespace Utils {
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint8_t color) {
-#ifdef ORIGINAL_LIB
-	  // convert RGBrgb to format library uses
-	  uint16_t encoded = LedMatrix.Color333((color >> 4) & 3, (color >> 2) & 3, color & 3);
-	  LedMatrix.drawPixel(x, y, encoded);
-#else
     LedMatrix::DrawPixel(x, y, color);
-#endif
   }
 
   static void FillRect(int8_t x, int8_t y, int8_t width, int8_t height, int8_t color) {
@@ -97,12 +69,13 @@ namespace Utils {
   }
 
   static void SwapPixels(int8_t x1, int8_t y1, int8_t x2, int8_t y2) {
-#ifdef ORIGINAL_LIB
-	// The original library does not support swapping of pixels
-	// so tetris will look very weird
-#else
-	LedMatrix::SwapPixels(x1, y1, x2, y2);
-#endif
+	  LedMatrix::SwapPixels(x1, y1, x2, y2);
+  }
+
+  static void PlayTone(uint16_t frequency, uint16_t duration) {
+    tone(BUZZER, frequency, duration);
+    delay(duration);
+    noTone(BUZZER);
   }
 }
 
@@ -144,6 +117,16 @@ namespace Utils {
 
         cursor_x += 6;
       }
+    }
+  }
+  static void DrawLineVertical(uint8_t x, uint8_t y, uint8_t length, uint8_t color) {
+    for (uint8_t i = 0; i < length; i++) {
+      Utils::DrawPixel(x, y+i, color);
+    }
+  }
+  static void DrawLineHorizontal(uint8_t x, uint8_t y, uint8_t length, uint8_t color) {
+    for (uint8_t i = 0; i < length; i++) {
+      Utils::DrawPixel(x+i, y, color);
     }
   }
 }
