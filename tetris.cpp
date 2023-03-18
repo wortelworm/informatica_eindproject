@@ -29,9 +29,9 @@ namespace Tetris {
   Piece fallingPiece;
   Piece previewPiece;
   uint8_t ghostY;
-  bool leftWasPressed = false;
-  bool rightWasPressed = false;
-  bool rotationWasPressed = false;
+  int8_t leftCountdown = 1;
+  int8_t rightCountdown = 1;
+  int8_t rotationCountdown = 1;
   bool speedupFlag = false;
   bool returnToMenu = false;
 
@@ -271,28 +271,45 @@ namespace Tetris {
 
 
   void readInputs() {
-    if (digitalRead(BUTTON_LEFT) && ! leftWasPressed) {
-      if (! wouldCollide(fallingX-1, fallingY, fallingPiece)) {
-        redrawFalling(fallingX-1, fallingY);
+    if (digitalRead(BUTTON_LEFT)) {
+      if (leftCountdown <= 0) {
+        if (! wouldCollide(fallingX-1, fallingY, fallingPiece)) {
+          redrawFalling(fallingX-1, fallingY);
+          leftCountdown = 5;
+        }
+      } else {
+        leftCountdown --;
       }
+    } else {
+      leftCountdown = 0;
     }
 
-    if (digitalRead(BUTTON_RIGHT) && ! rightWasPressed) {
-      if (! wouldCollide(fallingX+1, fallingY, fallingPiece)) {
-        redrawFalling(fallingX+1, fallingY);
+    if (digitalRead(BUTTON_RIGHT)) {
+      if (rightCountdown <= 0) {
+        if (! wouldCollide(fallingX+1, fallingY, fallingPiece)) {
+          redrawFalling(fallingX+1, fallingY);
+          rightCountdown = 5;
+        }
+      } else {
+        rightCountdown --;
       }
+    } else {
+      rightCountdown = 0;
     }
 
-    if (digitalRead(BUTTON_UP) && ! rotationWasPressed) {
-      Piece rotated = rotatePiece(fallingPiece);
-      if (! wouldCollide(fallingX, fallingY, rotated)) {
-        redrawFalling(fallingX, fallingY, rotated);
+    if (digitalRead(BUTTON_UP)) {
+      if (rotationCountdown <= 0) {
+        Piece rotated = rotatePiece(fallingPiece);
+        if (! wouldCollide(fallingX, fallingY, rotated)) {
+          redrawFalling(fallingX, fallingY, rotated);
+          rotationCountdown = 10;
+        }
+      } else {
+        rotationCountdown --;
       }
+    } else {
+      rotationCountdown = 0;
     }
-
-    leftWasPressed  = digitalRead(BUTTON_LEFT);
-    rightWasPressed = digitalRead(BUTTON_RIGHT);
-    rotationWasPressed = digitalRead(BUTTON_UP);
 
     speedupFlag = digitalRead(BUTTON_DOWN);
 

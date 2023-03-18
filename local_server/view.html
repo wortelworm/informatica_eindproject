@@ -58,7 +58,7 @@
                 document.onkeydown = function (e) {
                     e = e || window.event;
 
-                    const binding = keybindings[e.key];
+                    const binding = keybindings[e.key.toLowerCase()];
                     if (binding == null) {
                         return;
                     }

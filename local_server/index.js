@@ -62,6 +62,8 @@ wsServer.on('request', (request) => {
         console.log('Peer ' + connection.remoteAddress + ' disconnected: ' + description);
         current_connection = null;
     });
+
+    current_connection.send(getImage());
 });
 httpServer.listen(80, ()=> console.log('Online!'));
 

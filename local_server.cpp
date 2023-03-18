@@ -87,7 +87,10 @@ namespace Utils {
   static void FillRect(int8_t x, int8_t y, int8_t width, int8_t height, int16_t color) {
     for (int8_t i = 0; i < width; i++) {
       for (int8_t j = 0; j < height; j++) {
-        buffer[(x+i) + (y+j)*64] = color;
+        int16_t index = (x+i) + (y+j)*64;
+        if (index >= 0 && index < 4096) {
+          buffer[index] = color;
+        }
       }
     }
     Utils::writeBuffer();
@@ -123,8 +126,6 @@ namespace Utils {
 
 
 int main() {
-  Breakout::Play();
-
   setup();
   while (true) {
     loop();
