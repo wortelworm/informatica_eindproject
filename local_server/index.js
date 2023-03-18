@@ -25,7 +25,6 @@ var httpServer = http.createServer(function(request, response) {
         // from stormworks
         response.writeHead(200, {'Content-Type': 'text/html'});
         response.end([...getImage()].map( char => char.charCodeAt(0)).join(' '));
-        // response.end(getImage());
         let data = request.url.substring(7) * 1;
         let result = ''
         for (let i = 0; i < 6; i++) {

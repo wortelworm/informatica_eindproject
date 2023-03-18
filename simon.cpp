@@ -9,7 +9,7 @@
 #include "utils.h"
 
 namespace Simon {
-  uint64_t sequence;
+  uint8_t sequence[10];
 
   // makes the light bright, plays tone and dims the light again
   // E (green, left, an octave lower than blue);
@@ -66,7 +66,7 @@ namespace Simon {
     }
 
     // play tone while lit up
-    Utils::PlayTone(tone, 700);
+    Utils::PlayTone(tone, 500);
 
     // fill a rotated square dimmed
     for (uint8_t i = 0; i < 10-1; i++) {
@@ -84,28 +84,8 @@ namespace Simon {
       Utils::DrawPixel(x + 9 + j, y - 9 + j, BLACK);
     }
 
-    delay(200);
+    delay(50);
   }
-
-
-  uint8_t readInput() {
-    while(! (digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP))) {
-      delay(10);
-    }
-
-    if (digitalRead(BUTTON_LEFT)) {
-      return 0;
-    }
-    if (digitalRead(BUTTON_DOWN)) {
-      return 1;
-    }
-    if (digitalRead(BUTTON_RIGHT)) {
-      return 2;
-    }
-    return 3;
-  }
-
-
 
   void Play() {
     Utils::FillRect(0, 0, 64, 64, BLACK);
@@ -117,36 +97,83 @@ namespace Simon {
 
     delay(1000);
 
-    // for debug purposes only
-    while (true) {
-      uint8_t id = random(0, 4);
-      showLight(id);
+    // create random sequence
+    memset(sequence, 0, 10);
+    for (uint8_t i = 0; i < 40; i++) {
+      uint8_t random_id = random(0, 4);
+      sequence[i/4] |= random_id << (2 * (i % 4));
+    }
 
-      if (digitalRead(BUTTON_MENU)) {
-        // wait until unpressed
-        while (digitalRead(BUTTON_MENU)) {
+    // main game loop
+    uint8_t length = 0;
+    bool gameOver = false;
+    while (++length < 41) {
+      // show the current sequence
+      for (uint8_t i = 0; i < length; i++) {
+        uint8_t id = (sequence[i/4] >> (2 * (i % 4))) & 3;
+        showLight(id);
+        delay(150);
+      }
+
+      for (uint8_t i = 0; i < length; i++) {
+        // wait for user to press the next button
+        while (digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP)) {
           delay(10);
         }
-        return;
+        while (!(digitalRead(BUTTON_LEFT) || digitalRead(BUTTON_DOWN) || digitalRead(BUTTON_RIGHT) || digitalRead(BUTTON_UP))) {
+          delay(10);
+        }
+
+        // turn button press into id
+        uint8_t user_id;
+        if (digitalRead(BUTTON_LEFT)) {
+          user_id = 0;
+        } else
+        if (digitalRead(BUTTON_UP)) {
+          user_id = 1;
+        } else
+        if (digitalRead(BUTTON_RIGHT)) {
+          user_id = 2;
+        } else {
+          user_id = 3;
+        }
+        
+        uint8_t correct_id = (sequence[i/4] >> (2 * (i % 4))) & 3;
+        if (correct_id != user_id) {
+          // WRONG!
+          gameOver = true;
+          break;
+        }
+
+        // Correct, show it and advance to next
+        showLight(user_id);
       }
-    }
 
-    // create random sequence
-    sequence = 0;
-    for (uint8_t i = 0; i < 8; i++) {
-      sequence += random(0, 1 << 8) << (8 * i);
-    }
-
-    // TESTING: show sequence
-    while (true) {
-      for (uint8_t i = 0; i < 32; i++) {
-        uint8_t id = (sequence >> (2*i)) & 3;
-        showLight(id);
+      if (gameOver) {
+        // :(
+        break;
       }
-      delay(5 * 1000);
-      return;
+
+      // player survived the round,
+      // wait a bit before advancing to the next round
+      delay(1000);
     }
 
-    delay(5 * 60 * 1000);
+    if (gameOver) {
+      Utils::DrawText(5, 44, RED, "GAME OVER");
+      Utils::DrawText(5, 52, RED, "Score: ");
+      char buffer[2] = {'0', '0'};
+      itoa(length-1, buffer, 10);
+      Utils::DrawText((length-1) < 10 ? 53 : 47, 52, RED, buffer);
+    } else {
+      // somehow someone did so well he/she reached the end of the sequence
+      Utils::DrawText(5, 44, GREEN, "YOU WON!!");
+      Utils::DrawText(5, 52, GREEN, "SCORE: 40");
+    }
+
+    // wait till menu press
+    while (! digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
   }
 }

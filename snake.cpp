@@ -76,13 +76,11 @@ namespace Snake {
       snakeLength++;
 
       if (snakeLength >= 225) {
-        // TODO: win screen
         gameOver = true;
         return;
       }
 
       // respawn food, need to check that the food doesn't spawn on the snake
-      // TODO: more efficient algoritm. this one is shit.
       bool good = false;
       while (! good) {
         foodX = random(0, 15);
@@ -105,8 +103,7 @@ namespace Snake {
 
       if (removeTail) {
         // this should be done before drawing the head,
-        // otherwise in edgecase the head disappeared
-
+        // otherwise in edgecase the head disappears
         for (int8_t i = 0; i < 4; i++) {
           for (int8_t j = 0; j < 4; j++) {
             Utils::DrawPixel(tailX + i, tailY + j, 0);
@@ -165,7 +162,6 @@ namespace Snake {
       gameOver = true;
       return;
     } else {
-      // TODO?: more efficient algoritm. this one is shit.
       for (int i = 1; i < snakeLength; i++) {
         if (newHeadX == snakeX[i] && newHeadY == snakeY[i]) {
           gameOver = true;

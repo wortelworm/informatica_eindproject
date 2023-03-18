@@ -2,6 +2,7 @@
 #include "tetris.h"
 #include "game2048.h"
 #include "simon.h"
+#include "breakout.h"
 #include "utils.h"
 
 void setup() {
@@ -56,6 +57,8 @@ bool readButtons() {
       case 3:
         Simon::Play();
         break;
+      case 4:
+        Breakout::Play();
     }
 
     return true;
@@ -63,7 +66,7 @@ bool readButtons() {
   bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
-    if (game > 3) {
+    if (game > 4) {
       game = 0;
     }
     updateMenu = true;
@@ -71,7 +74,7 @@ bool readButtons() {
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
-      game = 3;
+      game = 4;
     }
     updateMenu = true;
   }
@@ -101,6 +104,11 @@ void loop() {
     case 3:
       // simon
       Utils::DrawText(18, 28, RED, "SIMON");
+      break;
+    case 4:
+      // breakout
+      Utils::DrawText(18, 24, GREEN, "BREAK");
+      Utils::DrawText(24, 32, GREEN, "OUT");
       break;
     default:
       // ?????

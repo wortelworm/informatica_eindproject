@@ -101,8 +101,8 @@ namespace Utils {
   }
 }
 
-// Definitions of arduino functions absend in native c++
-#define delay Utils::Delay
+// Definitions of arduino functions absent in native c++
+#define delay(duration) Utils::Delay(duration)
 #define random(low, high) (rand() % ((high) - (low)) + (low))
 #define pgm_read_byte(x) *((uint8_t*) (x))
 
@@ -119,9 +119,12 @@ namespace Utils {
 #include "tetris.cpp"
 #include "game2048.cpp"
 #include "simon.cpp"
+#include "breakout.cpp"
 
 
 int main() {
+  Breakout::Play();
+
   setup();
   while (true) {
     loop();
