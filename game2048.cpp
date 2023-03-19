@@ -256,6 +256,7 @@ namespace Game2048 {
 
     field[pos] = number;
     drawTile(pos%4, pos/4);
+    Utils::WriteBuffer();
 
     // check for gameOver properly
     gameOver = true;
@@ -277,7 +278,6 @@ namespace Game2048 {
         break;
       }
     }
-    
   }
 
 
@@ -505,6 +505,7 @@ namespace Game2048 {
           }
         }
       }
+      Utils::WriteBuffer();
     }
   }
 
@@ -520,6 +521,7 @@ namespace Game2048 {
         }
       }
     }
+    Utils::WriteBuffer();
 
     memset(field, 0, 16);
     score = 0;
@@ -531,8 +533,8 @@ namespace Game2048 {
     // for (int i = 0; i < 16; i++) {
     //   field[i] = i;
     //   drawTile(i % 4, i / 4);
+    //   Utils::WriteBuffer();
     // }
-
     // delay(1000 * 60 * 5);
 
     while (! gameOver) {
@@ -582,6 +584,7 @@ namespace Game2048 {
       }
     }
     Utils::DrawText(12 + 3*(7 - numberOfDigits), 37, win ? GREEN : RED, buffer);
+    Utils::WriteBuffer();
 
     // wait until start or menu button is unpressed and pressed
     while (digitalRead(BUTTON_START) || digitalRead(BUTTON_MENU)) {

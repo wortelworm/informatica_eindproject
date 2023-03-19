@@ -193,6 +193,7 @@ namespace Tetris {
         tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
       }
     }
+    Utils::WriteBuffer();
   }
   void redrawFalling(int8_t newX, int8_t newY) {
     redrawFalling(newX, newY, fallingPiece);
@@ -247,6 +248,7 @@ namespace Tetris {
         tetrisBlock(fallingX+(i%4), fallingY+(i>>2)+2, fallingPiece.color);
       }
     }
+    Utils::WriteBuffer();
 
     return !wouldCollide(fallingX, fallingY, fallingPiece);
   }
@@ -316,6 +318,7 @@ namespace Tetris {
     if (digitalRead(BUTTON_MENU)) {
       // pause the game
       Utils::DrawText(34, 52, RED, "Pause");
+      Utils::WriteBuffer();
 
       // until menu button is unpressed
       while (digitalRead(BUTTON_MENU)) {
@@ -335,6 +338,7 @@ namespace Tetris {
 
       // resume the game
       Utils::FillRect(34, 52, 29, 7, BLACK);
+      Utils::WriteBuffer();
     }
   }
 
@@ -357,12 +361,14 @@ namespace Tetris {
       }
     }
     Utils::DrawText(34 + 6*(5 - numberOfDigits), 39, RED, buffer);
+    Utils::WriteBuffer();
 
     if (score >= 99999) {
       // HOW?? Sure, you win
       Utils::DrawText(34, 47, GREEN, "You");
       Utils::DrawText(34, 55, GREEN, "WON!");
       returnToMenu = true;
+      Utils::WriteBuffer();
     
       // wait till button press before exit
       while (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START)) {
@@ -415,11 +421,13 @@ namespace Tetris {
         for (uint8_t j = 0; j < 10; j++) {
           tetrisBlock(j, fallingY + i, WHITE);
         }
+        Utils::WriteBuffer();
         delay(200);
 
         for (uint8_t j = 0; j < 10; j++) {
           tetrisBlock(j, fallingY + i, BLACK);
         }
+        Utils::WriteBuffer();
         delay(50);
 
 
@@ -432,9 +440,7 @@ namespace Tetris {
               Utils::SwapPixels(2+l, 2+j*3 + k, 2+l, 2 + (j-1)*3 + k);
             }
           }
-#ifndef ARDUINO
-          Utils::writeBuffer();
-#endif
+          Utils::WriteBuffer();
 
           // move over in memory
           for (uint8_t k = 0; k < 10; k++) {
@@ -490,6 +496,7 @@ namespace Tetris {
       char c[1];
       itoa(level % 10, c, 10);
       Utils::DrawText(57, 19, RED, c);
+      Utils::WriteBuffer();
     }
   }
 
@@ -550,6 +557,7 @@ namespace Tetris {
     // game over!
     Utils::DrawText(34, 47, RED, "Game");
     Utils::DrawText(34, 55, RED, "Over");
+    Utils::WriteBuffer();
 
     // wait till button press before exit
     while (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START)) {

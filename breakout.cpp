@@ -2,8 +2,15 @@
  * this is code to simulate the game of atari breakout
  * see example: https://elgoog.im/breakout/
  * 
- * TODO: REMOVE SUBPIXEL SYSTEM ITS QUITE BUGGY
- * A special subpixel and velocity direction system is being used
+ * A special direction system is being used,
+ * the direction is stored as a number from -3 to 3
+ * up/down is stored in an additional boolean
+ * 
+ * a movement parity flag is used to allow for movement
+ * to move horizontal then move diagonal
+ * or to move vertical then move diagonal
+ * 
+ * so a total of 14 different directions are possible
  */
 
 #include "breakout.h"
@@ -13,8 +20,8 @@
 
 
 namespace Breakout {
-  /// top left of 4x4 AND subpixeld
-  int16_t ballX, ballY;
+  /// top left of 4x4
+  int8_t ballX, ballY;
   /// -3: -1/2
   /// -2: -1
   /// 1: -2
@@ -24,6 +31,7 @@ namespace Breakout {
   /// 3: 1/2
   int8_t direction;
   bool going_up;
+  bool moveParity;
 
   uint8_t paddleX;
   uint8_t lives;
@@ -35,10 +43,32 @@ namespace Breakout {
   }
 
   void redrawBall(int16_t newX, int16_t newY) {
-    Utils::FillRect(ballX/2 + 1, ballY/2 + 10, 2, 2, BLACK);
+    Utils::FillRect(ballX + 1, ballY + 10, 2, 2, BLACK);
     ballX = newX;
     ballY = newY;
-    Utils::FillRect(ballX/2 + 1, ballY/2 + 10, 2, 2, YELLOW);
+    Utils::FillRect(ballX + 1, ballY + 10, 2, 2, YELLOW);
+  }
+
+  void drawHeart(uint8_t index, bool alive) {
+    /*
+      . # # . # # .
+      # # # # # # #
+      # # # # # # #
+      # # # # # # #
+      . # # # # # .
+      . . # # # . .
+      . . . # . . .
+    */
+
+    uint8_t color = alive ? RED : BLACK;
+    uint8_t x = 1 + index * 8;
+    Utils::DrawLineVertical(x+0, 2, 3, color);
+    Utils::DrawLineVertical(x+1, 1, 5, color);
+    Utils::DrawLineVertical(x+2, 1, 6, color);
+    Utils::DrawLineVertical(x+3, 2, 6, color);
+    Utils::DrawLineVertical(x+4, 1, 6, color);
+    Utils::DrawLineVertical(x+5, 1, 5, color);
+    Utils::DrawLineVertical(x+6, 2, 3, color);
   }
 
   bool breakBlock(uint8_t x, uint8_t y) {
@@ -58,7 +88,7 @@ namespace Breakout {
     return true;
   }
 
-  void moveBall() {
+  bool moveBall() {
     if (direction < -3) {
       direction = -3;
     } else if (direction > 3) {
@@ -66,132 +96,166 @@ namespace Breakout {
     }
     int8_t dx;
     int8_t dy;
-    switch (direction) {
-      case -3:
-        dx = -2;
-        dy = 1;
-        break;
-      case -2:
-        dx = -1;
-        dy = 1;
-        break;
-      case -1:
-        dx = -1;
-        dy = 2;
-        break;
-      case 0:
-        dx = 0;
-        dy = 2;
-        break;
-      case 1:
-        dx = 1;
-        dy = 2;
-        break;
-      case 2:
-        dx = 1;
-        dy = 1;
-        break;
-      case 3:
-        dx = 2;
-        dy = 1;
-        break;
+    bool diagonal = false;
+    if (moveParity && direction != 0) {
+      // diagonal move
+      dy = 1;
+      dx = (direction > 0) ? 1 : -1;
+      diagonal = true;
+    } else {
+      switch (direction) {
+        case -3:
+          dx = -1;
+          dy = 0;
+          break;
+        case -2:
+          dx = -1;
+          dy = 1;
+          diagonal = true;
+          break;
+        case -1:
+          dx = 0;
+          dy = 1;
+          break;
+        case 0:
+          dx = 0;
+          dy = 1;
+          break;
+        case 1:
+          dx = 0;
+          dy = 1;
+          break;
+        case 2:
+          dx = 1;
+          dy = 1;
+          diagonal = true;
+          break;
+        case 3:
+          dx = 1;
+          dy = 0;
+          break;
+      }
     }
 
     if (going_up) {
       dy = -dy;
     }
-    int16_t newX = ballX+dx;
-    int16_t newY = ballY+dy;
+    int8_t newX = ballX+dx;
+    int8_t newY = ballY+dy;
 
     // collision detection
     // walls
     if (going_up) {
       if (newY < 0) {
-        newY = 0;
+        newY = 1;
         going_up = false;
       }
     } else {
-      if (newY >= 98 && newX/2 >= paddleX-2 && newX/2 <= paddleX + 8) {
-        newY = 98;
+      if (newY >= 49 && newX >= paddleX-1 && newX <= paddleX + 9) {
+        newY = 49;
         going_up = true;
 
-        direction = direction + (newX/2 - (paddleX + 3));
+        direction = direction + (newX - (paddleX + 3));
       }
     }
 
     if (newX < 0) {
-      newX = 0;
+      newX = 1;
       direction = -direction;
-    } else if (newX >= 118) {
-      newX = 118;
+    } else if (newX > 59) {
+      newX = 59;
       direction = -direction;
     }
 
     // collision detection on field
-    if (newY > 8 && newY < 50) {
-      // check if above or below
-      if (going_up) {
-        // check for above
-        if ((newY/2) % 4 == 0) {
+    if (newY > 4 && newY < 25) {
+      if (dy < 0) {
+        // check above
+        if ((newY) % 4 == 0) {
           // get the coords of this block
-          uint8_t x = (newX / 2) / 6;
-          uint8_t y = (newY / 2) / 4 - 2;
+          uint8_t x = (newX) / 6;
+          uint8_t y = (newY) / 4 - 2;
 
           // does it still exist?
           if (breakBlock(x, y)) {
             // yes, its broken now, bounce off
             going_up = false;
-            newY = ((newY & ~1) + 3);
+            newY += 2;
           }
         }
-      } else {
-        // TODO
+      } else if (dy > 0) {
+        // check below
+        if (newY % 4 == 1) {
+          // get the coords of this block
+          uint8_t x = (newX) / 6;
+          uint8_t y = (newY) / 4 - 1;
+
+          // does it still exist?
+          if (breakBlock(x, y)) {
+            // yes, its broken now, bounce off
+            going_up = true;
+            newY -= 2;
+          }
+        }
       }
 
       // check for blocks to the side
-      if (direction < 0) {
+      if (dx < 0) {
         // check to the left
-        if ((newX/2)%6 == 5) {
+        if (newX%6 == 5) {
           // get the coords of this block
-          uint8_t x = (newX / 2) / 6;
-          uint8_t y = (newY / 2 + 4) / 4 - 2;
+          uint8_t x = (newX) / 6;
+          uint8_t y = (newY - 5) / 4;
 
           // does it still exist?
           if (breakBlock(x, y)) {
             // yes, its broken now, bounce off
             direction = -direction;
-            newX = ((newX & ~1) - 3);
+            newX += 2;
           }
         }
       } else
-      if (direction > 0) {
+      if (dx > 0) {
         // check to the right
-        if ((newX/2)%6 == 0) {
+        if (newX%6 == 0) {
           // get the coords of this block
-          uint8_t x = (newX / 2) / 6;
-          uint8_t y = (newY / 2 + 4) / 4 - 2;
+          uint8_t x = (newX) / 6;
+          uint8_t y = (newY - 5) / 4;
 
           // does it still exist?
           if (breakBlock(x, y)) {
             // yes, its broken now, bounce off
             direction = -direction;
-            newX = ((newX & ~1) + 3);
+            newX -= 2;
           }
         }
       }
     }
 
     redrawBall(newX, newY);
+    Utils::WriteBuffer();
+
+    moveParity = ! moveParity;
+    return diagonal;
   }
 
   void Play() {
     Utils::FillRect(0, 0, 64, 64, BLACK);
-    Utils::DrawText(10, 1, BLUE, "Lives:3");
+    for (uint8_t i = 0; i < 3; i++) {
+      drawHeart(i, true);
+    }
     
     // borders
     Utils::DrawLineHorizontal(0, 9, 63, GREY);
     Utils::DrawLineVertical(0, 10, 54, GREY);
     Utils::DrawLineVertical(62, 10, 54, GREY);
+
+    // TODO: custom font to fit everything OR also show speed and just explain the 'dials'
+    Utils::DrawText(27, 1, BLUE, "Score");
+
+    for (uint8_t i = 0; i < 9; i += 2) {
+      Utils::DrawPixel(25, i, GREY);
+    }
 
     // show field
     for (uint8_t j = 0; j < 10; j++) {
@@ -223,21 +287,24 @@ namespace Breakout {
       Utils::DrawLineHorizontal(31-5, 61, 5 * 2, WHITE);
 
       // show first frame of the ball
-      ballX = 58;
-      ballY = 98;
-      redrawBall(58, 98);
+      ballX = 29;
+      ballY = 49;
+      redrawBall(29, 49);
       
       do {
         direction = random(-2, 2 + 1);
       } while (direction == 0);
 
       going_up = true;
+      moveParity = true;
       paddleX = 25;
+
+      Utils::WriteBuffer();
 
       delay(2000);
 
-      while (ballY < 106) {
-        moveBall();
+      while (ballY < 53) {
+        bool diagonalMove = moveBall();
 
         // read inputs
         for (uint8_t i = 0; i < 3; i++) {
@@ -255,19 +322,57 @@ namespace Breakout {
             }
           }
 
-          delay(12);
-          // delay(30);
+          if (digitalRead(BUTTON_MENU)) {
+            // pause
+            // TODO: draw border
+            Utils::FillRect(14, 40, 35, 7, BLACK);
+            Utils::DrawText(14, 40, RED, "Paused");
+            Utils::WriteBuffer();
+
+            // wait for button unpress and press
+            while (digitalRead(BUTTON_MENU)) {
+              delay(10);
+            }
+            while (! (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START))) {
+              delay(10);
+            }
+
+            if (digitalRead(BUTTON_MENU)) {
+              // stop the game
+              return;
+            }
+
+            // resume the game
+            Utils::FillRect(14, 40, 35, 7, BLACK);
+            redrawBall(ballX, ballY);
+            Utils::WriteBuffer();
+          }
+
+          // diagonal moves move further, so add more delay
+          if (diagonalMove) {
+            // multiplied by sqrt(2)
+            delay(17);
+            // delay(42);
+          } else {
+            delay(12);
+            // delay(30);
+          }
         }
       }
-      lives--;
-      Utils::FillRect(46, 1, 5, 7, BLACK);
-      char buffer[1] = {};
-      itoa(lives, buffer, 10);
-      Utils::DrawText(46, 1, BLUE, buffer);
 
+      // remove a heart
+      lives--;
+      drawHeart(lives, false);
       delay(2000);
     }
 
-    delay(1000*5);
+    // TODO: gameover screen
+    Utils::FillRect(14, 40, 35, 7, BLACK);
+    Utils::DrawText(14, 40, RED, "Game Over");
+
+    // wait till button press before returning
+    while (! digitalRead(BUTTON_MENU)) {
+      delay(10);
+    }
   }
 }

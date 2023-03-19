@@ -30,6 +30,7 @@ namespace Snake {
     foodPixel(foodX*4+1, foodY*4+2);
     foodPixel(foodX*4+2, foodY*4+1);
     foodPixel(foodX*4+2, foodY*4+2);
+    Utils::WriteBuffer();
   }
 
 
@@ -110,7 +111,6 @@ namespace Snake {
           }
         }
       }
-      
     }
     
     // draw the head
@@ -119,7 +119,7 @@ namespace Snake {
     snakePixel(newHeadX * 4+1, newHeadY * 4+2);
     snakePixel(newHeadX * 4+2, newHeadY * 4+2);
 
-    // draw the pixels before the head
+    // draw the neck
     if (directionY == 1) {
       // down
       snakePixel(newHeadX * 4 + 1, newHeadY * 4 + 0);
@@ -145,8 +145,9 @@ namespace Snake {
       snakePixel(newHeadX * 4 + 4, newHeadY * 4 + 1);
       snakePixel(newHeadX * 4 + 4, newHeadY * 4 + 2);
     }
+    Utils::WriteBuffer();
 
-    // moves the snake
+    // move the snake
     for (int i = snakeLength-1; i > 0; i--) {
       snakeX[i] = snakeX[i-1];
       snakeY[i] = snakeY[i-1];
@@ -170,6 +171,7 @@ namespace Snake {
           int8_t headY = snakeY[0]*4 + 2 - directionY;
           
           Utils::FillRect(headX + 1, headY + 1, 2, 2, PURPLE);
+          Utils::WriteBuffer();
           delay(1000);
           return;
         }
@@ -212,6 +214,7 @@ namespace Snake {
     }
 
     drawFood();
+    Utils::WriteBuffer();
 
     // draw the initial snake
     // memset(snakeX, -1, 1);
@@ -260,6 +263,7 @@ namespace Snake {
     itoa(snakeLength - 3, buffer, 10);
     Utils::DrawText(41, 33, RED, buffer);
 
+    Utils::WriteBuffer();
     delay(1000);
 
     // wait until start or menu button is pressed and unpressed

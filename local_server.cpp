@@ -59,11 +59,6 @@ namespace Utils {
     }
 
     buffer[x + y*64] = color;
-    // write to file
-    Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
-    Utils::output_file.seekp((x + y * 64), std::ios::beg);
-    Utils::output_file.put(color);
-    Utils::output_file.close();
   }
 
   static void PlayTone(uint16_t frequency, uint16_t duration) {
@@ -78,7 +73,7 @@ namespace Utils {
     Utils::output_file.close();
   }
 
-  static void writeBuffer() {
+  static void WriteBuffer() {
     Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
     Utils::output_file.write((char*) buffer, 4096);
     Utils::output_file.close();
@@ -93,8 +88,6 @@ namespace Utils {
         }
       }
     }
-    Utils::writeBuffer();
-    Utils::Delay(width * height / 20);
   }
 
   static void SwapPixels(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2) {

@@ -116,6 +116,8 @@ void loop() {
       return;
   }
 
+  Utils::WriteBuffer();
+
   while (! readButtons()) {
     delay(10);
   }

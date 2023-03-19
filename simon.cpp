@@ -64,6 +64,7 @@ namespace Simon {
     for (uint8_t j = 0; j < 10; j++) {
       Utils::DrawPixel(x + 9 + j, y - 9 + j, color);
     }
+    Utils::WriteBuffer();
 
     // play tone while lit up
     Utils::PlayTone(tone, 500);
@@ -83,6 +84,7 @@ namespace Simon {
       // Utils::DrawPixel(x + 9 + j, y - 9 + j, (((9+j)%2) == 0) ? color : BLACK);
       Utils::DrawPixel(x + 9 + j, y - 9 + j, BLACK);
     }
+    Utils::WriteBuffer();
 
     delay(50);
   }
@@ -170,6 +172,7 @@ namespace Simon {
       Utils::DrawText(5, 44, GREEN, "YOU WON!!");
       Utils::DrawText(5, 52, GREEN, "SCORE: 40");
     }
+    Utils::WriteBuffer();
 
     // wait till menu press
     while (! digitalRead(BUTTON_MENU)) {
