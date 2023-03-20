@@ -16,8 +16,6 @@
 #include "breakout.h"
 #include "utils.h"
 
-#include <iostream>
-
 
 namespace Breakout {
   /// top left of 4x4

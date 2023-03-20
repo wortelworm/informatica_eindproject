@@ -77,6 +77,11 @@ namespace Utils {
     delay(duration);
     noTone(BUZZER);
   }
+
+  static void WriteBuffer() {
+    // The arduino is not dubble buffered,
+    // so nothing needs to be done here
+  }
 }
 
 #endif
