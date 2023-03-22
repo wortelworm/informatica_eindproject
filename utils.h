@@ -26,12 +26,12 @@
 #define BLUE    18    // 001100 -> 010010
 #define RED      9    // 000011 -> 001001
 
-#define YELLOW  27    // 001111 -> 011011
-#define MAGENTA 45    // 110011 -> 101101
+#define MAGENTA 27    // 001111 -> 011011
+#define YELLOW  45    // 110011 -> 101101
 #define CYAN    54    // 111100 -> 110110
 
 #define PURPLE   3    // 010001 -> 000011
-#define ORANGE  11    // 110100 -> 001011
+#define ORANGE  11    // 110100 -> 001101
 
 
 #define BUTTON_LEFT  42
@@ -42,6 +42,7 @@
 #define BUTTON_MENU  39
 
 #define BUZZER 12
+#define MUSIC 47
 
 
 namespace Utils {
@@ -54,6 +55,10 @@ namespace Utils {
     pinMode(BUTTON_UP,    INPUT);
     pinMode(BUTTON_START, INPUT);
     pinMode(BUTTON_MENU,  INPUT);
+
+    pinMode(BUZZER, OUTPUT);
+    pinMode(MUSIC, OUTPUT);
+    digitalWrite(MUSIC, HIGH);
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint8_t color) {

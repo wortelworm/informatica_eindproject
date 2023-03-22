@@ -3,6 +3,7 @@
 #include "game2048.h"
 #include "simon.h"
 #include "breakout.h"
+#include "flappybird.h"
 #include "utils.h"
 
 void setup() {
@@ -59,6 +60,10 @@ bool readButtons() {
         break;
       case 4:
         Breakout::Play();
+        break;
+      case 5:
+        FlappyBird::Play();
+        break;
     }
 
     return true;
@@ -66,7 +71,7 @@ bool readButtons() {
   bool updateMenu = false;
   if (digitalRead(BUTTON_RIGHT) && ! prevStateButtonRight) {
     game++;
-    if (game > 4) {
+    if (game > 5) {
       game = 0;
     }
     updateMenu = true;
@@ -74,7 +79,7 @@ bool readButtons() {
   if (digitalRead(BUTTON_LEFT) && ! prevStateButtonLeft) {
     game--;
     if (game < 0) {
-      game = 4;
+      game = 5;
     }
     updateMenu = true;
   }
@@ -109,6 +114,11 @@ void loop() {
       // breakout
       Utils::DrawText(18, 24, GREEN, "BREAK");
       Utils::DrawText(24, 32, GREEN, "OUT");
+      break;
+    case 5:
+      // flappy bird
+      Utils::DrawText(15, 24, BLUE, "FLAPPY");
+      Utils::DrawText(21, 32, BLUE, "BIRD");
       break;
     default:
       // ?????

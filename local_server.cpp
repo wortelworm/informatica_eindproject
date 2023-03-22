@@ -116,6 +116,7 @@ namespace Utils {
 #include "game2048.cpp"
 #include "simon.cpp"
 #include "breakout.cpp"
+#include "flappybird.cpp"
 
 
 int main() {

@@ -35,6 +35,8 @@ namespace Breakout {
   uint8_t lives;
 
   uint64_t field;
+  uint16_t score;
+  bool fieldCleared;
 
   void drawBlock(uint8_t x, uint8_t y, uint8_t color) {
     Utils::FillRect(x*6+2, 16 + y*4, 5, 3, color);
@@ -83,6 +85,21 @@ namespace Breakout {
     // remove block and draw removed block
     field &= ~field_mask;
     drawBlock(x, y, BLACK);
+
+    // update score
+    score++;
+    if (score > 999) {
+      score = 999;
+    }
+    char buffer[3] = {};
+    itoa(score, buffer, 10);
+    Utils::FillRect(43, 1, 17, 7, BLACK);
+    Utils::DrawText(score > 99 ? 43 : (score > 9 ? 49 : 55), 1, BLUE, buffer);
+
+    if (score > 0 && score % 50 == 0) {
+      fieldCleared = true;
+    }
+    
     return true;
   }
 
@@ -237,24 +254,8 @@ namespace Breakout {
     return diagonal;
   }
 
-  void Play() {
-    Utils::FillRect(0, 0, 64, 64, BLACK);
-    for (uint8_t i = 0; i < 3; i++) {
-      drawHeart(i, true);
-    }
+  void resetField() {
     
-    // borders
-    Utils::DrawLineHorizontal(0, 9, 63, GREY);
-    Utils::DrawLineVertical(0, 10, 54, GREY);
-    Utils::DrawLineVertical(62, 10, 54, GREY);
-
-    // TODO: custom font to fit everything OR also show speed and just explain the 'dials'
-    Utils::DrawText(27, 1, BLUE, "Score");
-
-    for (uint8_t i = 0; i < 9; i += 2) {
-      Utils::DrawPixel(25, i, GREY);
-    }
-
     // show field
     for (uint8_t j = 0; j < 10; j++) {
       drawBlock(j, 0, RED);
@@ -272,12 +273,33 @@ namespace Breakout {
       drawBlock(j, 4, BLUE);
     }
 
+    field = ((uint64_t) 1 << 51) - 1;
+  }
+
+  void Play() {
+    Utils::FillRect(0, 0, 64, 64, BLACK);
+    for (uint8_t i = 0; i < 3; i++) {
+      drawHeart(i, true);
+    }
+    
+    // borders
+    Utils::DrawLineHorizontal(0, 9, 63, GREY);
+    Utils::DrawLineVertical(0, 10, 54, GREY);
+    Utils::DrawLineVertical(62, 10, 54, GREY);
+
+    for (uint8_t i = 0; i < 9; i += 2) {
+      Utils::DrawPixel(25, i, GREY);
+    }
+
     lives = 3;
     direction = 0;
-    field = ((uint64_t) 1 << 51) - 1;
+    score = 0;
+
+    resetField();
 
     // main game loop
     while (lives > 0) {
+      
       // remove any previous paddle or ball on the screen
       Utils::FillRect(1, 61, 61, 3, BLACK);
 
@@ -296,6 +318,7 @@ namespace Breakout {
       going_up = true;
       moveParity = true;
       paddleX = 25;
+      fieldCleared = false;
 
       Utils::WriteBuffer();
 
@@ -303,6 +326,13 @@ namespace Breakout {
 
       while (ballY < 53) {
         bool diagonalMove = moveBall();
+
+        if (fieldCleared) {
+          // remove the ball drawing
+          Utils::FillRect(ballX + 1, ballY + 10, 2, 2, BLACK);
+          resetField();
+          break;
+        }
 
         // read inputs
         for (uint8_t i = 0; i < 3; i++) {
@@ -322,8 +352,11 @@ namespace Breakout {
 
           if (digitalRead(BUTTON_MENU)) {
             // pause
-            // TODO: draw border
-            Utils::FillRect(14, 40, 35, 7, BLACK);
+            Utils::FillRect(13, 39, 37, 9, BLACK);
+            Utils::DrawLineHorizontal(13, 38, 37, WHITE);
+            Utils::DrawLineHorizontal(13, 48, 37, WHITE);
+            Utils::DrawLineVertical(12, 39, 9, WHITE);
+            Utils::DrawLineVertical(50, 39, 9, WHITE);
             Utils::DrawText(14, 40, RED, "Paused");
             Utils::WriteBuffer();
 
@@ -341,7 +374,7 @@ namespace Breakout {
             }
 
             // resume the game
-            Utils::FillRect(14, 40, 35, 7, BLACK);
+            Utils::FillRect(12, 38, 39, 11, BLACK);
             redrawBall(ballX, ballY);
             Utils::WriteBuffer();
           }
@@ -358,15 +391,18 @@ namespace Breakout {
         }
       }
 
-      // remove a heart
-      lives--;
-      drawHeart(lives, false);
-      delay(2000);
+      if (! fieldCleared) {
+        // remove a heart
+        lives--;
+        drawHeart(lives, false);
+        delay(2000); 
+      }
     }
 
-    // TODO: gameover screen
-    Utils::FillRect(14, 40, 35, 7, BLACK);
-    Utils::DrawText(14, 40, RED, "Game Over");
+    Utils::FillRect(5, 40, 53, 7, BLACK);
+    Utils::DrawText(5, 40, RED, "Game Over");
+
+    Utils::WriteBuffer();
 
     // wait till button press before returning
     while (! digitalRead(BUTTON_MENU)) {
