@@ -73,6 +73,10 @@ namespace Utils {
     Utils::output_file.close();
   }
 
+  static void PlayMelody(uint8_t id) {
+    // TODO?
+  }
+
   static void WriteBuffer() {
     Utils::output_file.open("output.txt", std::ios::binary | std::ios::out | std::ios::in);
     Utils::output_file.write((char*) buffer, 4096);

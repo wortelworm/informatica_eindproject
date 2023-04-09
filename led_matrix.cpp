@@ -29,10 +29,16 @@
 #define DATADIR  DDRA
 #define SCLKPORT PORTB
 
+#define ONE_BIT_COLOR_DEPTH
+
 // format:
 // 3 dimensions, from smallest to largest multiplier:
 // x, bitplane, y
-uint8_t *matrix_buffer;
+#ifdef ONE_BIT_COLOR_DEPTH
+uint8_t matrix_buffer[2048];
+#else
+uint8_t matrix_buffer[4096];
+#endif
 volatile uint8_t *buffer_ptr;
 
 // PORT register pointers, pin bitmasks, pin numbers:
@@ -54,9 +60,13 @@ namespace LedMatrix {
     // Allocate and initialize matrix buffer:
 
     // dimensions of 64x64, 2 pixels per byte, 2 bit color depth
-    int buffsize  = 64 * 64 / 2 * 2;
-    if(NULL == (matrix_buffer = (uint8_t *)malloc(buffsize))) return;
-    memset(matrix_buffer, 0, buffsize);
+//    int buffsize  = 64 * 64 / 2 * 2;
+//    if(NULL == (matrix_buffer = (uint8_t *)malloc(buffsize))) return;
+#ifdef ONE_BIT_COLOR_DEPTH
+    memset(matrix_buffer, 0, 2048);
+#else
+    memset(matrix_buffer, 0, 4096);
+#endif
     
     pinMode(PIN_CLOCK,OUTPUT);
     pinMode(PIN_LATCH,OUTPUT);
@@ -121,16 +131,20 @@ namespace LedMatrix {
 
   }
   void DrawPixel(int8_t x, int8_t y, uint8_t color) {
-    uint8_t *ptr;
-  
     if ((x < 0) || (x >= 64) || (y < 0) || (y >= 64)) {
       return;
     }
+    
+    uint8_t *ptr;
 
     // format of the color: 00RGBrgb
     // first the three upper bits and then the three lower bits
     
+#ifdef ONE_BIT_COLOR_DEPTH
+    ptr = &matrix_buffer[(y % 32) * 64 + x]; // Base addr
+#else
     ptr = &matrix_buffer[(y % 32) * 64 * 2 + x]; // Base addr
+#endif
 
     if (y < 32) {
       // data for upper half of the display is stored in the lower bits
@@ -138,48 +152,59 @@ namespace LedMatrix {
       *ptr &= ~B00011100;
       *ptr |= (color & 7) << 2;
 
+#ifndef ONE_BIT_COLOR_DEPTH
       // advance to the higher bitplane
       ptr += 64;
       
       *ptr &= ~B00011100;
       *ptr |= ((color >> 3) & 7) << 2;
+#endif
     } else {
       // data for lower half of the display is stored in the upper bits
       // set the lower bitplane
       *ptr &= ~B11100000;
       *ptr |= (color & 7) << 5;
 
+#ifndef ONE_BIT_COLOR_DEPTH
       // advance to the higher bitplane
       ptr += 64;
       
       *ptr &= ~B11100000;
       *ptr |= ((color >> 3) & 7) << 5;
-      
+#endif
     }
   }
   uint8_t getPixelColor(int8_t x, int8_t y) {
+#ifdef ONE_BIT_COLOR_DEPTH
+    uint8_t *ptr = &matrix_buffer[(y % 32) * 64 + x]; // Base addr
+#else
     uint8_t *ptr = &matrix_buffer[(y % 32) * 64 * 2 + x]; // Base addr
+#endif
     uint8_t color = 0;
     if (y < 32) {
       // data for the upper half is stored in the lower bits
       // get the lower bitplane
       color |= ((*ptr) & B00011100) >> 2;
       
+#ifndef ONE_BIT_COLOR_DEPTH
       // advance to the higher bitplane
       ptr += 64;
       
       // get the upper bitplane
       color |= ((*ptr) & B00011100) << 1;
+#endif
     } else {
       // data for lower half of the display is stored in the upper bits
       // get the lower bitplane
       color |= ((*ptr) & B11100000) >> 5;
       
+#ifndef ONE_BIT_COLOR_DEPTH
       // advance to the higher bitplane
       ptr += 64;
       
       // get the upper bitplane
       color |= ((*ptr) & B11100000) >> 2;
+#endif
     }
     
     return color;
@@ -263,7 +288,11 @@ void updateDisplay(void)
   //   t = LOOPTIME<<1;
   t = LOOPTIME;
 
+#ifdef ONE_BIT_COLOR_DEPTH
+  duration = ((t + CALLOVERHEAD * 2)) - CALLOVERHEAD;
+#else
   duration = ((t + CALLOVERHEAD * 2) << plane) - CALLOVERHEAD;
+#endif
 
   // Borrowing a technique here from Ray's Logic:
   // www.rayslogic.com/propeller/Programming/AdafruitRGB/AdafruitRGB.htm
@@ -282,6 +311,9 @@ void updateDisplay(void)
   } else if(plane == 1) {
     // Plane 0 was loaded on prior interrupt invocation and is about to
     // latch now, so update the row address lines before we do that:
+#ifdef ONE_BIT_COLOR_DEPTH
+    row--;
+#endif
     if(row & 0x1)   *addraport |=  addrapin; // high
     else            *addraport &= ~addrapin; // low
     if(row & 0x2)   *addrbport |=  addrbpin;
@@ -292,12 +324,24 @@ void updateDisplay(void)
     else            *addrdport &= ~addrdpin;
     if(row == 0x10) *addreport |=  addrepin;
     else if(row == 0x00) *addreport &= ~addrepin;
+#ifdef ONE_BIT_COLOR_DEPTH
+    row++;
+#endif
   }
 
   // buffer, being 'volatile' type, doesn't take well to optimization.
   // A local register copy can speed some things up:
-  // ptr = (uint8_t *)buffer_ptr;
+//   ptr = (uint8_t *)buffer_ptr;
+  
+  if (plane != 0) {
+    return;
+  }
+
+#ifdef ONE_BIT_COLOR_DEPTH
+  ptr = & (matrix_buffer[row * 64]);
+#else
   ptr = & (matrix_buffer[row * 128 + plane * 64]);
+#endif
 
   ICR1      = duration; // Set interval for next interrupt
   TCNT1     = 0;        // Restart interrupt timer

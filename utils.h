@@ -6,6 +6,10 @@
  * 
  */
 
+#define MELODY_NONE 0
+#define MELODY_TETRIS 1
+#define MELODY_IDK 2
+
 #ifndef ARDUINO
 // this is local testing
 #include "local_server.cpp"
@@ -13,6 +17,7 @@
 #else
 // arduino
 #include <Arduino.h>
+#include <Wire.h>
 #include "led_matrix.h"
 
 // colors used both by the arduino
@@ -42,12 +47,12 @@
 #define BUTTON_MENU  39
 
 #define BUZZER 12
-#define MUSIC 47
 
 
 namespace Utils {
   static void Init() {
     LedMatrix::Init();
+    Wire.begin();
 
     pinMode(BUTTON_LEFT,  INPUT);
     pinMode(BUTTON_DOWN,  INPUT);
@@ -57,8 +62,6 @@ namespace Utils {
     pinMode(BUTTON_MENU,  INPUT);
 
     pinMode(BUZZER, OUTPUT);
-    pinMode(MUSIC, OUTPUT);
-    digitalWrite(MUSIC, HIGH);
   }
 
   static void DrawPixel(int8_t x, int8_t y, uint8_t color) {
@@ -81,6 +84,12 @@ namespace Utils {
     tone(BUZZER, frequency, duration);
     delay(duration);
     noTone(BUZZER);
+  }
+
+  static void PlayMelody(uint8_t id) {
+    Wire.beginTransmission(8);
+    Wire.write(id);
+    Wire.endTransmission();
   }
 
   static void WriteBuffer() {
