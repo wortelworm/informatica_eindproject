@@ -72,16 +72,13 @@ namespace Simon {
     // fill a rotated square dimmed
     for (uint8_t i = 0; i < 10-1; i++) {
       for (uint8_t j = 0; j < 10; j++) {
-        // Utils::DrawPixel(x +     i + j, y - i + j, (((i+j)%2) == 0) ? color : BLACK);
         Utils::DrawPixel(x +     i + j, y - i + j, BLACK);
       }
       for (uint8_t j = 0; j < 10-1; j++) {
-        // Utils::DrawPixel(x + 1 + i + j, y - i + j, (((i+j)%2) == 0) ? color : BLACK);
         Utils::DrawPixel(x + 1 + i + j, y - i + j, color);
       }
     }
     for (uint8_t j = 0; j < 10; j++) {
-      // Utils::DrawPixel(x + 9 + j, y - 9 + j, (((9+j)%2) == 0) ? color : BLACK);
       Utils::DrawPixel(x + 9 + j, y - 9 + j, BLACK);
     }
     Utils::WriteBuffer();

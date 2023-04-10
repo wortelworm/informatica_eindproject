@@ -329,14 +329,13 @@ void updateDisplay(void)
 #endif
   }
 
-  // buffer, being 'volatile' type, doesn't take well to optimization.
-  // A local register copy can speed some things up:
-//   ptr = (uint8_t *)buffer_ptr;
-  
   if (plane != 0) {
     return;
   }
 
+  // buffer, being 'volatile' type, doesn't take well to optimization.
+  // A local register copy can speed some things up:
+//   ptr = (uint8_t *)buffer_ptr;
 #ifdef ONE_BIT_COLOR_DEPTH
   ptr = & (matrix_buffer[row * 64]);
 #else

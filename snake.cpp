@@ -217,7 +217,6 @@ namespace Snake {
     Utils::WriteBuffer();
 
     // draw the initial snake
-    // memset(snakeX, -1, 1);
     Snake::move(false);
     Snake::move(false);
   }
