@@ -8,7 +8,8 @@
 
 #define MELODY_NONE 0
 #define MELODY_TETRIS 1
-#define MELODY_IDK 2
+#define MELODY_BEETHOVEN 2
+#define MELODY_FROZEN 3
 
 #ifndef ARDUINO
 // this is local testing

@@ -114,7 +114,7 @@ namespace Utils {
 #define BUTTON_START 5
 #define BUTTON_MENU  6
 
-#include "informatica_eindproject.ino"
+#include "master.ino"
 #include "snake.cpp"
 #include "tetris.cpp"
 #include "game2048.cpp"

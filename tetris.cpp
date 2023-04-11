@@ -530,15 +530,12 @@ namespace Tetris {
     memset(field, 0, 25);
     createPiece();
 
-    Utils::PlayMelody(MELODY_TETRIS);
-
     while (createPiece()) {
       delay(500);
       while (! moveFallingPiece()) {
         for (int8_t i = 0; i < 30 - (level*2); i++) {
           readInputs();
           if (returnToMenu) {
-            Utils::PlayMelody(MELODY_NONE);
             return;
           }
           delay(25);
@@ -570,7 +567,5 @@ namespace Tetris {
     while (! (digitalRead(BUTTON_MENU) || digitalRead(BUTTON_START))) {
       delay(10);
     }
-  
-    Utils::PlayMelody(MELODY_NONE);
   }
 }
