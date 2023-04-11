@@ -164,6 +164,10 @@ namespace Simon {
       char buffer[2] = {'0', '0'};
       itoa(length-1, buffer, 10);
       Utils::DrawText((length-1) < 10 ? 53 : 47, 52, RED, buffer);
+
+      // The player is a failure, give sound feedback to reflect that
+      Utils::PlayTone(2000, 1000);
+      
     } else {
       // somehow someone did so well he/she reached the end of the sequence
       Utils::DrawText(5, 44, GREEN, "YOU WON!!");

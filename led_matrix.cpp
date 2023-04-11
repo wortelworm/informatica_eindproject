@@ -291,7 +291,7 @@ void updateDisplay(void)
 #ifdef ONE_BIT_COLOR_DEPTH
   duration = ((t + CALLOVERHEAD * 2)) - CALLOVERHEAD;
 #else
-  duration = ((t + CALLOVERHEAD * 2) << plane) - CALLOVERHEAD;
+  duration = ((t + CALLOVERHEAD * 2) << (plane)) - CALLOVERHEAD;
 #endif
 
   // Borrowing a technique here from Ray's Logic:
@@ -311,9 +311,9 @@ void updateDisplay(void)
   } else if(plane == 1) {
     // Plane 0 was loaded on prior interrupt invocation and is about to
     // latch now, so update the row address lines before we do that:
-#ifdef ONE_BIT_COLOR_DEPTH
+//#ifdef ONE_BIT_COLOR_DEPTH
     row--;
-#endif
+//#endif
     if(row & 0x1)   *addraport |=  addrapin; // high
     else            *addraport &= ~addrapin; // low
     if(row & 0x2)   *addrbport |=  addrbpin;
@@ -324,9 +324,9 @@ void updateDisplay(void)
     else            *addrdport &= ~addrdpin;
     if(row == 0x10) *addreport |=  addrepin;
     else if(row == 0x00) *addreport &= ~addrepin;
-#ifdef ONE_BIT_COLOR_DEPTH
+//#ifdef ONE_BIT_COLOR_DEPTH
     row++;
-#endif
+//#endif
   }
 
   if (plane != 0) {
